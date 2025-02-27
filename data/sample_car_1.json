@@ -1,0 +1,25 @@
+{
+    "make": "Tesla",
+    "model": "Model 3",
+    "version": "Performance",
+    "year": 2023,
+    "range": 358,
+    "battery_capacity": 75,
+    "price": 40000,
+    "features": [
+        "Autopilot",
+        "Panoramic Roof",
+        "Heated Seats"
+    ],
+    "characteristics": {
+        "horsepower": 450,
+        "torque": 471,
+        "top_speed": 162,
+        "acceleration_0_60": 3.1
+    },
+    "photos": [
+        "https://example.com/photo1.jpg",
+        "https://example.com/photo2.jpg"
+    ],
+    "description": "The Tesla Model 3 Performance offers exceptional range and acceleration."
+}
