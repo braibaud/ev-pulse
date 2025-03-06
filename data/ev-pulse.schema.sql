@@ -1,323 +1,483 @@
--- Create the FeatureGroup table
-DROP TABLE IF EXISTS FeatureGroup;
+create schema if not exists dbo;
+create extension if not exists "pgcrypto";
 
-CREATE TABLE FeatureGroup (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+
+create table if not exists dbo.attribute_group (
+    id serial,
+    is_active boolean not null default true,
+    name text not null,
+    primary key (id)
+);
+
+create table if not exists dbo.attribute (
+    id serial,
+    attribute_group_id integer,
+    is_active boolean not null default true,
+    name text not null,
+    default_unit text,
+    primary key (id),
+    foreign key (attribute_group_id) references dbo.attribute_group (id)
 );
 
 
--- Create the Feature table
-DROP TABLE IF EXISTS Feature;
-
-CREATE TABLE Feature (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    feature_group_id INTEGER,
-    FOREIGN KEY (feature_group_id) REFERENCES FeatureGroup(id)
+create table if not exists dbo.feature_group (
+    id serial,
+    is_active boolean not null default true,
+    name text not null,
+    primary key (id)
 );
 
 
--- Create the AttributeGroup table
-DROP TABLE IF EXISTS AttributeGroup;
-
-CREATE TABLE AttributeGroup (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+create table if not exists dbo.feature (
+    id serial,
+    feature_group_id integer not null,
+    is_active boolean not null default true,
+    name text not null,
+    default_currency text,
+    primary key (id),
+    foreign key (feature_group_id) references dbo.feature_group (id)
 );
 
 
--- Create the Attribute table
-DROP TABLE IF EXISTS Attribute;
-
-CREATE TABLE Attribute (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    attribute_group_id INTEGER,
-    FOREIGN KEY (attribute_group_id) REFERENCES AttributeGroup(id)
+create table if not exists dbo.entity_type (
+    id integer not null,
+    is_active boolean not null default true,
+    name text not null,
+    primary key (id)
 );
 
 
--- Create the Brand table
-DROP TABLE IF EXISTS Brand;
+delete from dbo.entity_type;
 
-CREATE TABLE Brand (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+insert into
+    dbo.entity_type (id, name)
+values
+    (0, 'Brand'),
+    (1, 'Model'),
+    (2, 'Variant'),
+    (3, 'Battery'),
+    (4, 'Motor');
+
+
+create or replace function dbo.get_entity_type_id(p_entity_type_name text)
+returns integer as
+$$
+declare
+    v_entity_type_id integer;
+begin
+    select id into v_entity_type_id
+    from dbo.entity_type
+    where name = p_entity_type_name;
+
+    return v_entity_type_id;
+end;
+$$
+language plpgsql;
+
+
+create or replace function dbo.get_entity_type_name(p_entity_type_id integer)
+returns text as
+$$
+declare
+    v_entity_type_name text;
+begin
+    select name into v_entity_type_name
+    from dbo.entity_type
+    where id = p_entity_type_id;
+
+    return v_entity_type_name;
+end;
+$$
+language plpgsql;
+
+
+create table if not exists dbo.entity (
+    id uuid default gen_random_uuid(),
+    entity_type_id integer not null,
+    parent_id uuid null,
+    parent_entity_type_id integer null,
+    name text not null,
+    is_virtual boolean not null default true,
+    is_active boolean not null default true,
+    primary key (id, entity_type_id),
+    foreign key (parent_id, parent_entity_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (entity_type_id) references dbo.entity_type(id)
 );
 
 
--- Create the BrandAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS BrandAttribute;
+create index if not exists idx_entity_parent_id_parent_type on dbo.entity(parent_id, parent_entity_type_id);
 
-CREATE TABLE BrandAttribute (
-    brand_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (brand_id, attribute_id),
-    FOREIGN KEY (brand_id) REFERENCES Brand(id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
+
+create table if not exists dbo.entity_feature (
+    entity_id uuid not null,
+    entity_type_id integer not null,
+    feature_id integer not null,
+    is_optional boolean not null default true,
+    is_active boolean not null default true,
+    price real not null,
+    currency text,
+    primary key (entity_id, entity_type_id, feature_id),
+    foreign key (entity_id, entity_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (feature_id) references dbo.feature(id)
 );
 
 
--- Create the Model table
-DROP TABLE IF EXISTS Model;
-
-CREATE TABLE Model (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    brand_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    launch_year INTEGER NOT NULL,
-    FOREIGN KEY (brand_id) REFERENCES Brand(id)
+create table if not exists dbo.entity_attribute (
+    entity_id uuid not null,
+    entity_type_id integer not null,
+    attribute_id integer not null,
+    is_active boolean not null default true,
+    value text not null,
+    unit text,
+    primary key (entity_id, entity_type_id, attribute_id),
+    foreign key (entity_id, entity_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (attribute_id) references dbo.attribute(id)
 );
 
 
--- Create the ModelFeature table for many-to-many relationship
-DROP TABLE IF EXISTS ModelFeature;
-
-CREATE TABLE ModelFeature (
-    model_id INTEGER NOT NULL,
-    feature_id INTEGER NOT NULL,
-    is_included BOOLEAN NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (model_id, feature_id),
-    FOREIGN KEY (model_id) REFERENCES Model(id),
-    FOREIGN KEY (feature_id) REFERENCES Feature(id)
+create table if not exists dbo.vehicle (
+    variant_id uuid not null,
+    variant_type_id integer not null,
+    motor_id uuid not null,
+    motor_type_id integer not null,
+    battery_id uuid not null,
+    battery_type_id integer not null,
+    is_active boolean not null default true,
+    primary key (variant_id, motor_id, battery_id),
+    foreign key (variant_id, variant_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (motor_id, motor_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (battery_id, battery_type_id) references dbo.entity(id, entity_type_id)
 );
 
 
--- Create the ModelAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS ModelAttribute;
+create or replace function dbo.check_vehicle_type_ids()
+returns trigger as 
+$$
+begin
+    if dbo.get_entity_type_name(new.variant_type_id) != 'Variant' then
+        raise exception 'invalid variant_type_id, should be "Variant"';
+    end if;
 
-CREATE TABLE ModelAttribute (
-    model_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (model_id, attribute_id),
-    FOREIGN KEY (model_id) REFERENCES Model(id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
+    if dbo.get_entity_type_name(new.motor_type_id) != 'Motor' then
+        raise exception 'invalid motor_type_id, should be "Motor"';
+    end if;
+
+    if dbo.get_entity_type_name(new.battery_type_id) != 'Battery' then
+        raise exception 'invalid battery_type_id, should be "Battery"';
+    end if;
+
+    return new;
+end;
+$$ 
+language plpgsql;
+
+
+create or replace trigger check_vehicle_type_ids
+before insert on dbo.vehicle
+for each row
+execute function dbo.check_vehicle_type_ids();
+
+
+create table if not exists dbo.vehicle_feature (
+    variant_id uuid not null,
+    motor_id uuid not null,
+    battery_id uuid not null,
+    feature_id integer not null,
+    is_optional boolean not null default true,
+    is_active boolean not null default true,
+    price real not null,
+    currency text,
+    primary key (variant_id, motor_id, battery_id, feature_id),
+    foreign key (variant_id, motor_id, battery_id) references dbo.vehicle(variant_id, motor_id, battery_id),
+    foreign key (feature_id) references dbo.feature(id)
 );
 
-
--- Create the Variant table
-DROP TABLE IF EXISTS Variant;
-
-CREATE TABLE Variant (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    model_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    is_real_variant BOOLEAN NOT NULL,
-    inherits_from INTEGER,
-    availability TEXT,
-    launch_date DATE,
-    FOREIGN KEY (model_id) REFERENCES Model(id),
-    FOREIGN KEY (inherits_from) REFERENCES Variant(id)
+create table if not exists dbo.vehicle_attribute (
+    variant_id uuid not null,
+    motor_id uuid not null,
+    battery_id uuid not null,
+    attribute_id integer not null,
+    is_active boolean not null default true,
+    value text not null,
+    unit text,
+    primary key (variant_id, motor_id, battery_id, attribute_id),
+    foreign key (variant_id, motor_id, battery_id) references dbo.vehicle(variant_id, motor_id, battery_id),
+    foreign key (attribute_id) references dbo.attribute(id)
 );
 
-
--- Create the VariantFeature table for many-to-many relationship
-DROP TABLE IF EXISTS VariantFeature;
-
-CREATE TABLE VariantFeature (
-    variant_id INTEGER NOT NULL,
-    feature_id INTEGER NOT NULL,
-    is_included BOOLEAN NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (variant_id, feature_id),
-    FOREIGN KEY (variant_id) REFERENCES Variant(id),
-    FOREIGN KEY (feature_id) REFERENCES Feature(id)
+create table if not exists dbo.related_entities (
+    entity1_id uuid not null,
+    entity1_type_id integer not null,
+    entity2_id uuid not null,
+    entity2_type_id integer not null,
+    primary key (entity1_id, entity1_type_id, entity2_id, entity2_type_id),
+    foreign key (entity1_id, entity1_type_id) references dbo.entity(id, entity_type_id),
+    foreign key (entity2_id, entity2_type_id) references dbo.entity(id, entity_type_id)
 );
 
+create or replace function dbo.get_nearest_parent(
+    p_id uuid,
+    p_entity_type_id integer,
+    p_target_entity_type_id integer,
+    p_max_depth integer default 10 -- limit recursion depth
+) returns uuid as 
+$$
+begin
+    return (
+        with recursive parent_hierarchy as (
+            -- base case: start with the given entity
+            select id, entity_type_id, parent_id, parent_entity_type_id, 1 as depth
+            from dbo.entity
+            where id = p_id and entity_type_id = p_entity_type_id
 
--- Create the VariantAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS VariantAttribute;
+            union all
 
-CREATE TABLE VariantAttribute (
-    variant_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (variant_id, attribute_id),
-    FOREIGN KEY (variant_id) REFERENCES Variant(id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
-);
-
-
--- Create the Motor table
-DROP TABLE IF EXISTS Motor;
-
-CREATE TABLE Motor (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    brand_id INTEGER NOT NULL,
-    type TEXT NOT NULL,
-    power REAL NOT NULL,
-    power_unit TEXT NOT NULL,
-    torque REAL NOT NULL,
-    torque_unit TEXT NOT NULL,
-    FOREIGN KEY (brand_id) REFERENCES Brand(id)
-);
-
-
--- Create the MotorFeature table for many-to-many relationship
-DROP TABLE IF EXISTS MotorFeature;
-
-CREATE TABLE MotorFeature (
-    motor_id INTEGER NOT NULL,
-    feature_id INTEGER NOT NULL,
-    is_included BOOLEAN NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (motor_id, feature_id),
-    FOREIGN KEY (motor_id) REFERENCES Motor(id),
-    FOREIGN KEY (feature_id) REFERENCES Feature(id)
-);
+            -- recursive case: follow the parent relationship
+            select e.id, e.entity_type_id, e.parent_id, e.parent_entity_type_id, ph.depth + 1
+            from dbo.entity e
+            inner join parent_hierarchy ph on e.id = ph.parent_id and e.entity_type_id = ph.parent_entity_type_id
+            where ph.depth < p_max_depth
+        )
+        -- select the nearest parent with the target entity type
+        select parent_id
+        from parent_hierarchy
+        where parent_entity_type_id = p_target_entity_type_id
+        order by depth, id
+        limit 1
+    );
+end;
+$$ 
+language plpgsql;
 
 
--- Create the MotorAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS MotorAttribute;
+create or replace function dbo.get_nearest_parent_entity(
+    p_id uuid,
+    p_entity_type_id integer,
+    p_target_entity_type_id integer,
+    p_max_depth integer default 10 -- limit recursion depth
+)
+returns dbo.entity as 
+$$
+declare
+    v_parent_id uuid;
+    v_parent_entity dbo.entity%rowtype;
+begin
+    -- call the get_nearest_parent function to get the parent id
+    v_parent_id := dbo.get_nearest_parent(p_id, p_entity_type_id, p_target_entity_type_id, p_max_depth);
 
-CREATE TABLE MotorAttribute (
-    motor_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (motor_id, attribute_id),
-    FOREIGN KEY (motor_id) REFERENCES Motor(id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
-);
+    -- if a parent id is found, retrieve the full row
+    if v_parent_id is not null then
+        select * into v_parent_entity
+        from dbo.entity
+        where id = v_parent_id and entity_type_id = p_target_entity_type_id;
 
-
--- Create the Battery table
-DROP TABLE IF EXISTS Battery;
-
-CREATE TABLE Battery (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    brand_id INTEGER NOT NULL,
-    capacity REAL NOT NULL,
-    capacity_unit TEXT NOT NULL,
-    range REAL NOT NULL,
-    range_unit TEXT NOT NULL,
-    FOREIGN KEY (brand_id) REFERENCES Brand(id)
-);
-
-
--- Create the BatteryFeature table for many-to-many relationship
-DROP TABLE IF EXISTS BatteryFeature;
-
-CREATE TABLE BatteryFeature (
-    battery_id INTEGER NOT NULL,
-    feature_id INTEGER NOT NULL,
-    is_included BOOLEAN NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (battery_id, feature_id),
-    FOREIGN KEY (battery_id) REFERENCES Battery(id),
-    FOREIGN KEY (feature_id) REFERENCES Feature(id)
-);
+        return v_parent_entity;
+    else
+        -- return null if no parent is found
+        return null;
+    end if;
+end;
+$$ 
+language plpgsql;
 
 
--- Create the BatteryAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS BatteryAttribute;
+delete from dbo.attribute_group;
 
-CREATE TABLE BatteryAttribute (
-    battery_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (battery_id, attribute_id),
-    FOREIGN KEY (battery_id) REFERENCES Battery(id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
-);
-
-
--- Create the Vehicle table for the combination of variant, motor, and battery
-DROP TABLE IF EXISTS Vehicle;
-
-CREATE TABLE Vehicle (
-    variant_id INTEGER NOT NULL,
-    motor_id INTEGER NOT NULL,
-    battery_id INTEGER NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (variant_id, motor_id, battery_id),
-    FOREIGN KEY (variant_id) REFERENCES Variant(id),
-    FOREIGN KEY (motor_id) REFERENCES Motor(id),
-    FOREIGN KEY (battery_id) REFERENCES Battery(id)
-);
+insert into
+    dbo.attribute_group (name)
+values
+    ('Performance'),
+    ('Dimensions'),
+    ('Weight'),
+    ('Fuel Efficiency'),
+    ('Electric Range'),
+    ('Charging'),
+    ('Materials'),
+    ('Pricing'),
+    ('Warranty'),
+    ('Certifications'),
+    ('Safety'),
+    ('Manufacturing Details');
 
 
--- Create the VehicleFeature table for many-to-many relationship
-DROP TABLE IF EXISTS VehicleFeature;
+delete from dbo.feature_group;
 
-CREATE TABLE VehicleFeature (
-    variant_id INTEGER NOT NULL,
-    motor_id INTEGER NOT NULL,
-    battery_id INTEGER NOT NULL,
-    feature_id INTEGER NOT NULL,
-    is_included BOOLEAN NOT NULL,
-    price REAL NOT NULL,
-    currency TEXT,
-    PRIMARY KEY (variant_id, motor_id, battery_id, feature_id),
-    FOREIGN KEY (variant_id, motor_id, battery_id) REFERENCES Vehicle(variant_id, motor_id, battery_id),
-    FOREIGN KEY (feature_id) REFERENCES Feature(id)
-);
-
-
--- Create the VehicleAttribute table for many-to-many relationship
-DROP TABLE IF EXISTS VehicleAttribute;
-
-CREATE TABLE VehicleAttribute (
-    variant_id INTEGER NOT NULL,
-    motor_id INTEGER NOT NULL,
-    battery_id INTEGER NOT NULL,
-    attribute_id INTEGER NOT NULL,
-    value TEXT NOT NULL,
-    unit TEXT,
-    PRIMARY KEY (variant_id, motor_id, battery_id, attribute_id),
-    FOREIGN KEY (variant_id, motor_id, battery_id) REFERENCES Vehicle(variant_id, motor_id, battery_id),
-    FOREIGN KEY (attribute_id) REFERENCES Attribute(id)
-);
+insert into
+    dbo.feature_group (name)
+values
+    ('Interior'),
+    ('Exterior'),
+    ('Technology'),
+    ('Colors'),
+    ('Safety'),
+    ('Comfort'),
+    ('Performance'),
+    ('Connectivity'),
+    ('Entertainment'),
+    ('Efficiency');
 
 
--- Create the RelatedModel table for related models
-DROP TABLE IF EXISTS RelatedModel;
+create or replace function dbo.get_entity_features(
+    p_id uuid,
+    p_entity_type_id integer
+)
+returns table (
+    entity_id uuid,
+    entity_type_id integer,
+    feature_id integer,
+    is_optional boolean,
+    is_active boolean,
+    price real,
+    currency text,
+    is_inherited boolean,
+    source_entity_id uuid,
+    source_entity_type_id integer
+) as
+$$
+begin
+    return query
+    with recursive entity_hierarchy as (
+        -- base case: start with the given entity
+        select id, entity_type_id, parent_id, parent_entity_type_id, id as source_entity_id, entity_type_id as source_entity_type_id
+        from dbo.entity
+        where id = p_id and entity_type_id = p_entity_type_id
 
-CREATE TABLE RelatedModel (
-    model_id_1 INTEGER NOT NULL,
-    model_id_2 INTEGER NOT NULL,
-    PRIMARY KEY (model_id_1, model_id_2),
-    FOREIGN KEY (model_id_1) REFERENCES Model(id),
-    FOREIGN KEY (model_id_2) REFERENCES Model(id)
-);
+        union all
+
+        -- recursive case: follow the parent relationship
+        select e.id, e.entity_type_id, e.parent_id, e.parent_entity_type_id, eh.source_entity_id, eh.source_entity_type_id
+        from dbo.entity e
+        inner join entity_hierarchy eh on e.id = eh.parent_id and e.entity_type_id = eh.parent_entity_type_id
+    )
+    select ef.entity_id, ef.entity_type_id, ef.feature_id, ef.is_optional, ef.is_active, ef.price, ef.currency,
+           ef.entity_id != eh.id as is_inherited,
+           eh.source_entity_id, eh.source_entity_type_id
+    from dbo.entity_feature ef
+    inner join entity_hierarchy eh on ef.entity_id = eh.id and ef.entity_type_id = eh.entity_type_id
+    order by is_inherited, eh.id;
+end;
+$$
+language plpgsql;
 
 
--- Create a trigger to enforce brand consistency for Motor
-CREATE TRIGGER check_motor_brand
-BEFORE INSERT ON Vehicle
-FOR EACH ROW
-BEGIN
-    SELECT
-        CASE
-            WHEN (SELECT brand_id FROM Variant JOIN Model ON Variant.model_id = Model.id WHERE Variant.id = NEW.variant_id) !=
-                 (SELECT brand_id FROM Motor WHERE id = NEW.motor_id)
-            THEN RAISE(FAIL, 'Brand mismatch between Variant and Motor')
-        END;
-END;
+create or replace function dbo.get_entity_attributes(
+    p_id uuid,
+    p_entity_type_id integer
+)
+returns table (
+    entity_id uuid,
+    entity_type_id integer,
+    attribute_id integer,
+    is_active boolean,
+    value text,
+    unit text,
+    is_inherited boolean,
+    source_entity_id uuid,
+    source_entity_type_id integer
+) as
+$$
+begin
+    return query
+    with recursive entity_hierarchy as (
+        -- base case: start with the given entity
+        select id, entity_type_id, parent_id, parent_entity_type_id, id as source_entity_id, entity_type_id as source_entity_type_id
+        from dbo.entity
+        where id = p_id and entity_type_id = p_entity_type_id
+
+        union all
+
+        -- recursive case: follow the parent relationship
+        select e.id, e.entity_type_id, e.parent_id, e.parent_entity_type_id, eh.source_entity_id, eh.source_entity_type_id
+        from dbo.entity e
+        inner join entity_hierarchy eh on e.id = eh.parent_id and e.entity_type_id = eh.parent_entity_type_id
+    )
+    select ea.entity_id, ea.entity_type_id, ea.attribute_id, ea.is_active, ea.value, ea.unit,
+           ea.entity_id != eh.id as is_inherited,
+           eh.source_entity_id, eh.source_entity_type_id
+    from dbo.entity_attribute ea
+    inner join entity_hierarchy eh on ea.entity_id = eh.id and ea.entity_type_id = eh.entity_type_id
+    order by is_inherited, eh.id;
+end;
+$$
+language plpgsql;
 
 
--- Create a trigger to enforce brand consistency for Battery
-CREATE TRIGGER check_battery_brand
-BEFORE INSERT ON Vehicle
-FOR EACH ROW
-BEGIN
-    SELECT
-        CASE
-            WHEN (SELECT brand_id FROM Variant JOIN Model ON Variant.model_id = Model.id WHERE Variant.id = NEW.variant_id) !=
-                 (SELECT brand_id FROM Battery WHERE id = NEW.battery_id)
-            THEN RAISE(FAIL, 'Brand mismatch between Variant and Battery')
-        END;
-END;
+create or replace function dbo.get_vehicle_features(
+    p_variant_id uuid,
+    p_motor_id uuid,
+    p_battery_id uuid
+)
+returns table (
+    vehicle_part text,
+    entity_id uuid,
+    entity_type_id integer,
+    feature_id integer,
+    is_optional boolean,
+    is_active boolean,
+    price real,
+    currency text,
+    is_inherited boolean,
+    source_entity_id uuid,
+    source_entity_type_id integer
+) as
+$$
+begin
+    return query
+    -- Union features from variant, motor, and battery
+    select 'Variant' as vehicle_part, ef.*
+    from dbo.get_entity_features(p_variant_id, dbo.get_entity_type_id('Variant')) ef
+
+    union all
+
+    select 'Motor' as vehicle_part, ef.*
+    from dbo.get_entity_features(p_motor_id, dbo.get_entity_type_id('Motor')) ef
+
+    union all
+
+    select 'Battery' as vehicle_part, ef.*
+    from dbo.get_entity_features(p_battery_id, dbo.get_entity_type_id('Battery')) ef
+
+    order by vehicle_part, is_inherited, entity_id;
+end;
+$$
+language plpgsql;
+
+
+create or replace function dbo.get_vehicle_attributes(
+    p_variant_id uuid,
+    p_motor_id uuid,
+    p_battery_id uuid
+)
+returns table (
+    vehicle_part text,
+    entity_id uuid,
+    entity_type_id integer,
+    attribute_id integer,
+    is_active boolean,
+    value text,
+    unit text,
+    is_inherited boolean,
+    source_entity_id uuid,
+    source_entity_type_id integer
+) as
+$$
+begin
+    return query
+    -- Union attributes from variant, motor, and battery
+    select 'Variant' as vehicle_part, ea.*
+    from dbo.get_entity_attributes(p_variant_id, dbo.get_entity_type_id('Variant')) ea
+
+    union all
+
+    select 'Motor' as vehicle_part, ea.*
+    from dbo.get_entity_attributes(p_motor_id, dbo.get_entity_type_id('Motor')) ea
+
+    union all
+
+    select 'Battery' as vehicle_part, ea.*
+    from dbo.get_entity_attributes(p_battery_id, dbo.get_entity_type_id('Battery')) ea
+
+    order by vehicle_part, is_inherited, entity_id;
+end;
+$$
+language plpgsql;
