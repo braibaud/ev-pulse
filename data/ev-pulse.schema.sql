@@ -1,7 +1,6 @@
 create schema if not exists dbo;
 create extension if not exists "pgcrypto";
 
-
 create table if not exists dbo.attribute_group (
     id serial,
     is_active boolean not null default true,
@@ -19,14 +18,12 @@ create table if not exists dbo.attribute (
     foreign key (attribute_group_id) references dbo.attribute_group (id)
 );
 
-
 create table if not exists dbo.feature_group (
     id serial,
     is_active boolean not null default true,
     name text not null,
     primary key (id)
 );
-
 
 create table if not exists dbo.feature (
     id serial,
@@ -38,14 +35,12 @@ create table if not exists dbo.feature (
     foreign key (feature_group_id) references dbo.feature_group (id)
 );
 
-
 create table if not exists dbo.entity_type (
     id integer not null,
     is_active boolean not null default true,
     name text not null,
     primary key (id)
 );
-
 
 delete from dbo.entity_type;
 
@@ -57,7 +52,6 @@ values
     (2, 'Variant'),
     (3, 'Battery'),
     (4, 'Motor');
-
 
 create or replace function dbo.get_entity_type_id(p_entity_type_name text)
 returns integer as
@@ -74,7 +68,6 @@ end;
 $$
 language plpgsql;
 
-
 create or replace function dbo.get_entity_type_name(p_entity_type_id integer)
 returns text as
 $$
@@ -90,7 +83,6 @@ end;
 $$
 language plpgsql;
 
-
 create table if not exists dbo.entity (
     id uuid default gen_random_uuid(),
     entity_type_id integer not null,
@@ -104,9 +96,7 @@ create table if not exists dbo.entity (
     foreign key (entity_type_id) references dbo.entity_type(id)
 );
 
-
 create index if not exists idx_entity_parent_id_parent_type on dbo.entity(parent_id, parent_entity_type_id);
-
 
 create table if not exists dbo.entity_feature (
     entity_id uuid not null,
@@ -121,7 +111,6 @@ create table if not exists dbo.entity_feature (
     foreign key (feature_id) references dbo.feature(id)
 );
 
-
 create table if not exists dbo.entity_attribute (
     entity_id uuid not null,
     entity_type_id integer not null,
@@ -134,8 +123,8 @@ create table if not exists dbo.entity_attribute (
     foreign key (attribute_id) references dbo.attribute(id)
 );
 
-
 create table if not exists dbo.vehicle (
+    vehicle_id uuid default gen_random_uuid(),
     variant_id uuid not null,
     variant_type_id integer not null,
     motor_id uuid not null,
@@ -143,15 +132,15 @@ create table if not exists dbo.vehicle (
     battery_id uuid not null,
     battery_type_id integer not null,
     is_active boolean not null default true,
-    primary key (variant_id, motor_id, battery_id),
+    primary key (vehicle_id),
+    unique (variant_id, motor_id, battery_id),
     foreign key (variant_id, variant_type_id) references dbo.entity(id, entity_type_id),
     foreign key (motor_id, motor_type_id) references dbo.entity(id, entity_type_id),
     foreign key (battery_id, battery_type_id) references dbo.entity(id, entity_type_id)
 );
 
-
 create or replace function dbo.check_vehicle_type_ids()
-returns trigger as 
+returns trigger as
 $$
 begin
     if dbo.get_entity_type_name(new.variant_type_id) != 'Variant' then
@@ -168,40 +157,34 @@ begin
 
     return new;
 end;
-$$ 
+$$
 language plpgsql;
-
 
 create or replace trigger check_vehicle_type_ids
 before insert on dbo.vehicle
 for each row
 execute function dbo.check_vehicle_type_ids();
 
-
 create table if not exists dbo.vehicle_feature (
-    variant_id uuid not null,
-    motor_id uuid not null,
-    battery_id uuid not null,
+    vehicle_id uuid not null,
     feature_id integer not null,
     is_optional boolean not null default true,
     is_active boolean not null default true,
     price real not null,
     currency text,
-    primary key (variant_id, motor_id, battery_id, feature_id),
-    foreign key (variant_id, motor_id, battery_id) references dbo.vehicle(variant_id, motor_id, battery_id),
+    primary key (vehicle_id, feature_id),
+    foreign key (vehicle_id) references dbo.vehicle(vehicle_id),
     foreign key (feature_id) references dbo.feature(id)
 );
 
 create table if not exists dbo.vehicle_attribute (
-    variant_id uuid not null,
-    motor_id uuid not null,
-    battery_id uuid not null,
+    vehicle_id uuid not null,
     attribute_id integer not null,
     is_active boolean not null default true,
     value text not null,
     unit text,
-    primary key (variant_id, motor_id, battery_id, attribute_id),
-    foreign key (variant_id, motor_id, battery_id) references dbo.vehicle(variant_id, motor_id, battery_id),
+    primary key (vehicle_id, attribute_id),
+    foreign key (vehicle_id) references dbo.vehicle(vehicle_id),
     foreign key (attribute_id) references dbo.attribute(id)
 );
 
@@ -220,7 +203,7 @@ create or replace function dbo.get_nearest_parent(
     p_entity_type_id integer,
     p_target_entity_type_id integer,
     p_max_depth integer default 10 -- limit recursion depth
-) returns uuid as 
+) returns uuid as
 $$
 begin
     return (
@@ -246,9 +229,8 @@ begin
         limit 1
     );
 end;
-$$ 
+$$
 language plpgsql;
-
 
 create or replace function dbo.get_nearest_parent_entity(
     p_id uuid,
@@ -256,7 +238,7 @@ create or replace function dbo.get_nearest_parent_entity(
     p_target_entity_type_id integer,
     p_max_depth integer default 10 -- limit recursion depth
 )
-returns dbo.entity as 
+returns dbo.entity as
 $$
 declare
     v_parent_id uuid;
@@ -277,9 +259,8 @@ begin
         return null;
     end if;
 end;
-$$ 
+$$
 language plpgsql;
-
 
 delete from dbo.attribute_group;
 
@@ -299,7 +280,6 @@ values
     ('Safety'),
     ('Manufacturing Details');
 
-
 delete from dbo.feature_group;
 
 insert into
@@ -315,7 +295,6 @@ values
     ('Connectivity'),
     ('Entertainment'),
     ('Efficiency');
-
 
 create or replace function dbo.get_entity_features(
     p_id uuid,
@@ -359,7 +338,6 @@ end;
 $$
 language plpgsql;
 
-
 create or replace function dbo.get_entity_attributes(
     p_id uuid,
     p_entity_type_id integer
@@ -401,11 +379,8 @@ end;
 $$
 language plpgsql;
 
-
 create or replace function dbo.get_vehicle_features(
-    p_variant_id uuid,
-    p_motor_id uuid,
-    p_battery_id uuid
+    p_vehicle_id uuid
 )
 returns table (
     vehicle_part text,
@@ -421,32 +396,38 @@ returns table (
     source_entity_type_id integer
 ) as
 $$
+declare
+    v_variant_id uuid;
+    v_motor_id uuid;
+    v_battery_id uuid;
 begin
+    select variant_id, motor_id, battery_id
+    into v_variant_id, v_motor_id, v_battery_id
+    from dbo.vehicle
+    where vehicle_id = p_vehicle_id;
+
     return query
     -- Union features from variant, motor, and battery
     select 'Variant' as vehicle_part, ef.*
-    from dbo.get_entity_features(p_variant_id, dbo.get_entity_type_id('Variant')) ef
+    from dbo.get_entity_features(v_variant_id, dbo.get_entity_type_id('Variant')) ef
 
     union all
 
     select 'Motor' as vehicle_part, ef.*
-    from dbo.get_entity_features(p_motor_id, dbo.get_entity_type_id('Motor')) ef
+    from dbo.get_entity_features(v_motor_id, dbo.get_entity_type_id('Motor')) ef
 
     union all
 
     select 'Battery' as vehicle_part, ef.*
-    from dbo.get_entity_features(p_battery_id, dbo.get_entity_type_id('Battery')) ef
+    from dbo.get_entity_features(v_battery_id, dbo.get_entity_type_id('Battery')) ef
 
     order by vehicle_part, is_inherited, entity_id;
 end;
 $$
 language plpgsql;
 
-
 create or replace function dbo.get_vehicle_attributes(
-    p_variant_id uuid,
-    p_motor_id uuid,
-    p_battery_id uuid
+    p_vehicle_id uuid
 )
 returns table (
     vehicle_part text,
@@ -461,21 +442,30 @@ returns table (
     source_entity_type_id integer
 ) as
 $$
+declare
+    v_variant_id uuid;
+    v_motor_id uuid;
+    v_battery_id uuid;
 begin
+    select variant_id, motor_id, battery_id
+    into v_variant_id, v_motor_id, v_battery_id
+    from dbo.vehicle
+    where vehicle_id = p_vehicle_id;
+
     return query
     -- Union attributes from variant, motor, and battery
     select 'Variant' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(p_variant_id, dbo.get_entity_type_id('Variant')) ea
+    from dbo.get_entity_attributes(v_variant_id, dbo.get_entity_type_id('Variant')) ea
 
     union all
 
     select 'Motor' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(p_motor_id, dbo.get_entity_type_id('Motor')) ea
+    from dbo.get_entity_attributes(v_motor_id, dbo.get_entity_type_id('Motor')) ea
 
     union all
 
     select 'Battery' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(p_battery_id, dbo.get_entity_type_id('Battery')) ea
+    from dbo.get_entity_attributes(v_battery_id, dbo.get_entity_type_id('Battery')) ea
 
     order by vehicle_part, is_inherited, entity_id;
 end;
