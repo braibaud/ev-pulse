@@ -6,7 +6,7 @@ The `dbo.get_entity_attributes` function retrieves a list of attributes associat
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_entity_attributes(
     p_id uuid,
     p_entity_type_id integer
@@ -80,7 +80,7 @@ language plpgsql;
 
 To retrieve the attributes for a specific entity:
 
-```plsql
+```sql
 select * from dbo.get_entity_attributes('entity-uuid', 2);
 ```
 

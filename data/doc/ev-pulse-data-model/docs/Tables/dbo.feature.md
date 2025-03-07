@@ -6,7 +6,7 @@ The `dbo.feature` table defines various features that can be associated with ent
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.feature (
     id serial,
     feature_group_id integer not null,
@@ -45,14 +45,14 @@ create table if not exists dbo.feature (
 
 To insert a new feature, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.feature (feature_group_id, name, default_currency, is_inheritable, is_overridable)
 values (1, 'Leather Seats', 'USD', true, true);
 ```
 
 To retrieve all active features in a specific group:
 
-```plsql
+```sql
 select * from dbo.feature where feature_group_id = 1 and is_active = true;
 ```
 

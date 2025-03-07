@@ -6,7 +6,7 @@ The `dbo.entity` table is a central component of the EV database, representing v
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.entity (
     id uuid default gen_random_uuid(),
     entity_type_id integer not null,
@@ -47,7 +47,7 @@ create table if not exists dbo.entity (
 
 To insert a new entity, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.entity (entity_type_id, parent_id, parent_entity_type_id, name, is_virtual, is_active)
 values (2, 'parent-uuid', 1, 'Variant Name', true, true);
 ```

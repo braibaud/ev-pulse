@@ -6,7 +6,7 @@ The `dbo.attribute` table defines various attributes that can be associated with
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.attribute (
     id serial,
     attribute_group_id integer,
@@ -45,14 +45,14 @@ create table if not exists dbo.attribute (
 
 To insert a new attribute, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.attribute (attribute_group_id, name, default_unit, is_inheritable, is_overridable)
 values (1, 'Horsepower', 'kW', true, true);
 ```
 
 To retrieve all active attributes in a specific group:
 
-```plsql
+```sql
 select * from dbo.attribute where attribute_group_id = 1 and is_active = true;
 ```
 

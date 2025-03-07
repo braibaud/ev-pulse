@@ -6,7 +6,7 @@ The `dbo.vehicle_feature` table stores the features associated with specific veh
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.vehicle_feature (
     vehicle_id uuid not null,
     feature_id integer not null,
@@ -44,14 +44,14 @@ create table if not exists dbo.vehicle_feature (
 
 To insert a new feature and its price for a vehicle, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.vehicle_feature (vehicle_id, feature_id, is_optional, is_active, price, currency)
 values ('vehicle-uuid', 1, true, true, 1500.00, 'USD');
 ```
 
 To retrieve all active features for a specific vehicle:
 
-```plsql
+```sql
 select * from dbo.vehicle_feature where vehicle_id = 'vehicle-uuid' and is_active = true;
 ```
 

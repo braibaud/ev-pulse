@@ -6,7 +6,7 @@ The `dbo.set_entity_attribute_value` function is designed to set or update the v
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.set_entity_attribute_value(
     p_entity_id uuid,
     p_entity_type_id integer,
@@ -86,7 +86,7 @@ language plpgsql;
 
 To set an attribute value for an entity and propagate it to its child entities:
 
-```plsql
+```sql
 select dbo.set_entity_attribute_value(
     'entity-uuid',
     2,

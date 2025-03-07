@@ -6,7 +6,7 @@ The `dbo.get_vehicle_features` function retrieves a comprehensive list of featur
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_vehicle_features(
     p_vehicle_id uuid
 )
@@ -83,7 +83,7 @@ The function returns a table with the following columns:
 
 To retrieve the features for a specific vehicle:
 
-```plsql
+```sql
 select * from dbo.get_vehicle_features('vehicle-uuid');
 ```
 

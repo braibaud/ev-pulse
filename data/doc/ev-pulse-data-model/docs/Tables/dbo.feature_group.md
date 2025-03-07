@@ -6,7 +6,7 @@ The `dbo.feature_group` table is used to categorize features into logical groups
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.feature_group (
     id serial,
     is_active boolean not null default true,
@@ -34,14 +34,14 @@ create table if not exists dbo.feature_group (
 
 To insert a new feature group, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.feature_group (name)
 values ('New Feature Group');
 ```
 
 To retrieve all active feature groups:
 
-```plsql
+```sql
 select * from dbo.feature_group where is_active = true;
 ```
 

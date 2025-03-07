@@ -6,7 +6,7 @@ The `dbo.set_vehicle_feature_value` function is designed to update or insert the
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.set_vehicle_feature_value(
     p_vehicle_id uuid,
     p_feature_id integer,
@@ -65,7 +65,7 @@ language plpgsql;
 
 To set the value of a feature for a specific vehicle, you can call the function as follows:
 
-```plsql
+```sql
 select dbo.set_vehicle_feature_value(
     'vehicle-uuid',
     1,

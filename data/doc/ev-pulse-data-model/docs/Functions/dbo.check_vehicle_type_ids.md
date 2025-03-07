@@ -6,7 +6,7 @@ The `dbo.check_vehicle_type_ids` function is a trigger function designed to vali
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.check_vehicle_type_ids()
 returns trigger as
 $$
@@ -53,7 +53,7 @@ language plpgsql;
 
 The trigger function is automatically invoked when a new record is inserted into the `dbo.vehicle` table. Here is how the trigger is defined:
 
-```plsql
+```sql
 create or replace trigger check_vehicle_type_ids
 before insert on dbo.vehicle
 for each row

@@ -6,7 +6,7 @@ The `dbo.entity_attribute` table stores the attributes associated with entities 
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.entity_attribute (
     entity_id uuid not null,
     entity_type_id integer not null,
@@ -45,14 +45,14 @@ create table if not exists dbo.entity_attribute (
 
 To insert a new attribute value for an entity, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.entity_attribute (entity_id, entity_type_id, attribute_id, is_active, value, unit)
 values ('entity-uuid', 2, 1, true, '300', 'kW');
 ```
 
 To retrieve all active attribute values for a specific entity:
 
-```plsql
+```sql
 select * from dbo.entity_attribute where entity_id = 'entity-uuid' and is_active = true;
 ```
 

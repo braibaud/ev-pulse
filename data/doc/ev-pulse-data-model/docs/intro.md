@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Introduction to the EV Database Documentation
 
 Welcome to the documentation for the Electric Vehicle (EV) Database! This database is designed to manage comprehensive information about electric vehicles, including their variants, motors, batteries, and associated attributes and features. The documentation will guide you through the schema, functionality, and usage of the database.

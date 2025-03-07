@@ -47,8 +47,8 @@ const config = {
           // Please change this to your repo.
         },
         blog: {
-          path: './Blog',
-          routeBasePath: '/Blog',
+          path: './blog',
+          routeBasePath: '/blog',
           blogTitle: 'EV-Pulse Blog',
           blogDescription: 'The official blog of EV-Pulse',
           showReadingTime: true,
@@ -86,7 +86,7 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          { to: '/Blog', label: 'Blog', position: 'left' },
+          { to: '/blog', label: 'Blog', position: 'left' },
           {
             href: 'https://github.com/braibaud/ev-pulse',
             label: 'GitHub',
@@ -145,7 +145,7 @@ const config = {
             items: [
               {
                 label: 'Blog',
-                to: '/Blog',
+                to: '/blog',
               },
               {
                 label: 'GitHub',
@@ -154,7 +154,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} EV-Pulse, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} EV-Pulse`,
       },
       prism: {
         theme: prismThemes.github,

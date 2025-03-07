@@ -6,7 +6,7 @@ The `dbo.vehicle` table represents electric vehicles (EVs) within the database. 
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.vehicle (
     vehicle_id uuid default gen_random_uuid(),
     variant_id uuid not null,
@@ -52,7 +52,7 @@ create table if not exists dbo.vehicle (
 
 To insert a new vehicle configuration, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.vehicle (variant_id, variant_type_id, motor_id, motor_type_id, battery_id, battery_type_id, is_active)
 values ('variant-uuid', 2, 'motor-uuid', 4, 'battery-uuid', 3, true);
 ```

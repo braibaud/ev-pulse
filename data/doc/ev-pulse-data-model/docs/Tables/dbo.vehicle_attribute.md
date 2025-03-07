@@ -6,7 +6,7 @@ The `dbo.vehicle_attribute` table stores the attributes associated with specific
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.vehicle_attribute (
     vehicle_id uuid not null,
     attribute_id integer not null,
@@ -42,14 +42,14 @@ create table if not exists dbo.vehicle_attribute (
 
 To insert a new attribute value for a vehicle, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.vehicle_attribute (vehicle_id, attribute_id, is_active, value, unit)
 values ('vehicle-uuid', 1, true, '300', 'kW');
 ```
 
 To retrieve all active attribute values for a specific vehicle:
 
-```plsql
+```sql
 select * from dbo.vehicle_attribute where vehicle_id = 'vehicle-uuid' and is_active = true;
 ```
 

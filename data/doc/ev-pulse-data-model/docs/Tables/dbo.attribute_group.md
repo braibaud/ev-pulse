@@ -6,7 +6,7 @@ The `dbo.attribute_group` table is used to categorize attributes into logical gr
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.attribute_group (
     id serial,
     is_active boolean not null default true,
@@ -34,14 +34,14 @@ create table if not exists dbo.attribute_group (
 
 To insert a new attribute group, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.attribute_group (name)
 values ('New Attribute Group');
 ```
 
 To retrieve all active attribute groups:
 
-```plsql
+```sql
 select * from dbo.attribute_group where is_active = true;
 ```
 

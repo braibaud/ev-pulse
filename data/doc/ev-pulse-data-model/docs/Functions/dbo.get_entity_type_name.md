@@ -6,7 +6,7 @@ The `dbo.get_entity_type_name` function retrieves the name of an entity type bas
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_entity_type_name(p_entity_type_id integer)
 returns text as
 $$
@@ -44,7 +44,7 @@ language plpgsql;
 
 To retrieve the name of an entity type with ID 2:
 
-```plsql
+```sql
 select dbo.get_entity_type_name(2);
 ```
 

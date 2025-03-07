@@ -6,7 +6,7 @@ The `dbo.entity_type` table defines the various types of entities that can be ma
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.entity_type (
     id integer not null,
     is_active boolean not null default true,
@@ -36,14 +36,14 @@ create table if not exists dbo.entity_type (
 
 To insert a new entity type, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.entity_type (id, name)
 values (5, 'New Entity Type');
 ```
 
 To retrieve the ID of an entity type by name:
 
-```plsql
+```sql
 select dbo.get_entity_type_id('Variant');
 ```
 

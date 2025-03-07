@@ -6,7 +6,7 @@ The `dbo.entity_feature` table stores the features associated with entities in t
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.entity_feature (
     entity_id uuid not null,
     entity_type_id integer not null,
@@ -47,14 +47,14 @@ create table if not exists dbo.entity_feature (
 
 To insert a new feature and its price for an entity, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.entity_feature (entity_id, entity_type_id, feature_id, is_optional, is_active, price, currency)
 values ('entity-uuid', 2, 1, true, true, 1500.00, 'USD');
 ```
 
 To retrieve all active features for a specific entity:
 
-```plsql
+```sql
 select * from dbo.entity_feature where entity_id = 'entity-uuid' and is_active = true;
 ```
 

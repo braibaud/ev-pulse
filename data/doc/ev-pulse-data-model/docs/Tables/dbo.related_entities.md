@@ -6,7 +6,7 @@ The `dbo.related_entities` table captures relationships between entities within 
 
 ### Table Definition
 
-```plsql
+```sql
 create table if not exists dbo.related_entities (
     entity1_id uuid not null,
     entity1_type_id integer not null,
@@ -38,14 +38,14 @@ create table if not exists dbo.related_entities (
 
 To establish a relationship between two entities, you can use the following SQL statement:
 
-```plsql
+```sql
 insert into dbo.related_entities (entity1_id, entity1_type_id, entity2_id, entity2_type_id)
 values ('entity1-uuid', 2, 'entity2-uuid', 4);
 ```
 
 To retrieve all relationships involving a specific entity:
 
-```plsql
+```sql
 select * from dbo.related_entities where entity1_id = 'entity1-uuid' or entity2_id = 'entity1-uuid';
 ```
 

@@ -6,7 +6,7 @@ The `dbo.get_vehicle_attributes` function retrieves a comprehensive list of attr
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_vehicle_attributes(
     p_vehicle_id uuid
 )
@@ -81,7 +81,7 @@ language plpgsql;
 
 To retrieve attributes for a specific vehicle:
 
-```plsql
+```sql
 select * from dbo.get_vehicle_attributes('vehicle-uuid');
 ```
 

@@ -6,7 +6,7 @@ The `dbo.get_entity_type_id` function retrieves the ID of an entity type based o
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_entity_type_id(p_entity_type_name text)
 returns integer as
 $$
@@ -44,7 +44,7 @@ language plpgsql;
 
 To retrieve the ID of an entity type named 'Variant':
 
-```plsql
+```sql
 select dbo.get_entity_type_id('Variant');
 ```
 

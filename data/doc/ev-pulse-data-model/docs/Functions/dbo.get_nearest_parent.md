@@ -6,7 +6,7 @@ The `dbo.get_nearest_parent` function is designed to find the nearest parent ent
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_nearest_parent(
     p_id uuid,
     p_entity_type_id integer,
@@ -62,7 +62,7 @@ language plpgsql;
 
 To find the nearest parent of type 'Model' for a given variant entity:
 
-```plsql
+```sql
 select dbo.get_nearest_parent('variant-uuid', 2, 1, 5);
 ```
 

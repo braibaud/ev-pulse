@@ -6,7 +6,7 @@ The `dbo.set_vehicle_attribute_value` function is used to set or update the valu
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.set_vehicle_attribute_value(
     p_vehicle_id uuid,
     p_attribute_id integer,
@@ -65,7 +65,7 @@ language plpgsql;
 
 To set or update an attribute value for a vehicle:
 
-```plsql
+```sql
 select dbo.set_vehicle_attribute_value(
     'vehicle-uuid',
     1,

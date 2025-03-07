@@ -6,7 +6,7 @@ The `dbo.get_entity_features` function retrieves a list of features associated w
 
 ### Function Definition
 
-```plsql
+```sql
 create or replace function dbo.get_entity_features(
     p_id uuid,
     p_entity_type_id integer
@@ -82,7 +82,7 @@ language plpgsql;
 
 To retrieve the features for a specific entity:
 
-```plsql
+```sql
 select * from dbo.get_entity_features('entity-uuid', 2);
 ```
 
