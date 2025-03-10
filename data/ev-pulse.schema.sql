@@ -633,3 +633,35 @@ begin
 end;
 $$
 language plpgsql;
+
+
+create or replace function dbo.get_attribute_id(p_attribute_name text)
+returns integer as
+$$
+declare
+    v_attribute_id integer;
+begin
+    select id into v_attribute_id
+    from dbo.attribute
+    where name = p_attribute_name;
+
+    return v_attribute_id;
+end;
+$$
+language plpgsql;
+
+
+create or replace function dbo.get_feature_id(p_feature_name text)
+returns integer as
+$$
+declare
+    v_feature_id integer;
+begin
+    select id into v_feature_id
+    from dbo.feature
+    where name = p_feature_name;
+
+    return v_feature_id;
+end;
+$$
+language plpgsql;
