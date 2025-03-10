@@ -1,62 +1,20 @@
-create schema if not exists dbo;
-create extension if not exists "pgcrypto";
+-- Drop functions if they exist
+drop function if exists dbo.get_entity_type_id(text);
+drop function if exists dbo.get_entity_type_name(integer);
+drop function if exists dbo.get_nearest_parent(uuid, integer, integer, integer);
+drop function if exists dbo.get_nearest_parent_entity(uuid, integer, integer, integer);
+drop function if exists dbo.set_entity_attribute_value(uuid, integer, integer, text, text, boolean);
+drop function if exists dbo.set_entity_feature_value(uuid, integer, integer, real, text, boolean);
+drop function if exists dbo.set_vehicle_attribute_value(uuid, integer, text, text);
+drop function if exists dbo.set_vehicle_feature_value(uuid, integer, real, text);
+drop function if exists dbo.get_entity_features(uuid, integer);
+drop function if exists dbo.get_entity_attributes(uuid, integer);
+drop function if exists dbo.get_vehicle_features(uuid);
+drop function if exists dbo.get_vehicle_attributes(uuid);
+drop function if exists dbo.get_attribute_id(text);
+drop function if exists dbo.get_feature_id(text);
 
-create table if not exists dbo.attribute_group (
-    id serial,
-    is_active boolean not null default true,
-    name text not null,
-    primary key (id)
-);
-
-create table if not exists dbo.attribute (
-    id serial,
-    attribute_group_id integer,
-    is_active boolean not null default true,
-    name text not null,
-    default_unit text,
-    is_inheritable boolean not null default true,
-    is_overridable boolean not null default true,
-    primary key (id),
-    foreign key (attribute_group_id) references dbo.attribute_group (id)
-);
-
-create table if not exists dbo.feature_group (
-    id serial,
-    is_active boolean not null default true,
-    name text not null,
-    primary key (id)
-);
-
-create table if not exists dbo.feature (
-    id serial,
-    feature_group_id integer not null,
-    is_active boolean not null default true,
-    name text not null,
-    default_currency text,
-    is_inheritable boolean not null default true,
-    is_overridable boolean not null default true,
-    primary key (id),
-    foreign key (feature_group_id) references dbo.feature_group (id)
-);
-
-create table if not exists dbo.entity_type (
-    id integer not null,
-    is_active boolean not null default true,
-    name text not null,
-    primary key (id)
-);
-
-delete from dbo.entity_type;
-
-insert into
-    dbo.entity_type (id, name)
-values
-    (0, 'Brand'),
-    (1, 'Model'),
-    (2, 'Variant'),
-    (3, 'Battery'),
-    (4, 'Motor');
-
+-- Recreate functions
 create or replace function dbo.get_entity_type_id(p_entity_type_name text)
 returns integer as
 $$
@@ -86,135 +44,6 @@ begin
 end;
 $$
 language plpgsql;
-
-create table if not exists dbo.entity (
-    id uuid default gen_random_uuid(),
-    entity_type_id integer not null,
-    parent_id uuid null,
-    parent_entity_type_id integer null,
-    name text not null,
-    is_virtual boolean not null default true,
-    is_active boolean not null default true,
-    primary key (id, entity_type_id),
-    foreign key (parent_id, parent_entity_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (entity_type_id) references dbo.entity_type(id)
-);
-
-create index if not exists idx_entity_parent_id_parent_type on dbo.entity(parent_id, parent_entity_type_id);
-
-create table if not exists dbo.entity_feature (
-    entity_id uuid not null,
-    entity_type_id integer not null,
-    feature_id integer not null,
-    is_optional boolean not null default true,
-    is_active boolean not null default true,
-    price real not null,
-    currency text,
-    primary key (entity_id, entity_type_id, feature_id),
-    foreign key (entity_id, entity_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (feature_id) references dbo.feature(id)
-);
-
-create table if not exists dbo.entity_attribute (
-    entity_id uuid not null,
-    entity_type_id integer not null,
-    attribute_id integer not null,
-    is_active boolean not null default true,
-    value text not null,
-    unit text,
-    primary key (entity_id, entity_type_id, attribute_id),
-    foreign key (entity_id, entity_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (attribute_id) references dbo.attribute(id)
-);
-
-
-create table if not exists dbo.vehicle (
-    vehicle_id uuid default gen_random_uuid(),
-    name text not null,
-    is_active boolean not null default true,
-    primary key (vehicle_id)
-);
-
-create table if not exists dbo.vehicle_part (
-    vehicle_id uuid not null,
-    entity_id uuid not null,
-    entity_type_id integer not null,
-    part_type text not null,
-    is_active boolean not null default true,
-    primary key (vehicle_id, entity_id, entity_type_id),
-    foreign key (vehicle_id) references dbo.vehicle(vehicle_id),
-    foreign key (entity_id, entity_type_id) references dbo.entity(id, entity_type_id)
-);
-
--- Ensure a vehicle has at least one part
-create or replace function dbo.check_vehicle_has_parts()
-returns trigger as
-$$
-begin
-    if not exists (select 1 from dbo.vehicle_part where vehicle_id = new.vehicle_id) then
-        raise exception 'A vehicle must have at least one part';
-    end if;
-    return new;
-end;
-$$
-language plpgsql;
-
-create or replace trigger check_vehicle_has_parts
-after insert on dbo.vehicle
-for each row
-execute function dbo.check_vehicle_has_parts();
-
--- Ensure each part is unique for a vehicle
-create or replace function dbo.check_unique_parts()
-returns trigger as
-$$
-begin
-    if exists (select 1 from dbo.vehicle_part where vehicle_id = new.vehicle_id and entity_id = new.entity_id and entity_type_id = new.entity_type_id) then
-        raise exception 'Each part must be unique for a vehicle';
-    end if;
-    return new;
-end;
-$$
-language plpgsql;
-
-create or replace trigger check_unique_parts
-before insert on dbo.vehicle_part
-for each row
-execute function dbo.check_unique_parts();
-
-
-create table if not exists dbo.vehicle_feature (
-    vehicle_id uuid not null,
-    feature_id integer not null,
-    is_optional boolean not null default true,
-    is_active boolean not null default true,
-    price real not null,
-    currency text,
-    primary key (vehicle_id, feature_id),
-    foreign key (vehicle_id) references dbo.vehicle(vehicle_id),
-    foreign key (feature_id) references dbo.feature(id)
-);
-
-create table if not exists dbo.vehicle_attribute (
-    vehicle_id uuid not null,
-    attribute_id integer not null,
-    is_active boolean not null default true,
-    value text not null,
-    unit text,
-    primary key (vehicle_id, attribute_id),
-    foreign key (vehicle_id) references dbo.vehicle(vehicle_id),
-    foreign key (attribute_id) references dbo.attribute(id)
-);
-
-create table if not exists dbo.related_entities (
-    entity1_id uuid not null,
-    entity1_type_id integer not null,
-    entity2_id uuid not null,
-    entity2_type_id integer not null,
-    primary key (entity1_id, entity1_type_id, entity2_id, entity2_type_id),
-    foreign key (entity1_id, entity1_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (entity2_id, entity2_type_id) references dbo.entity(id, entity_type_id)
-);
 
 create or replace function dbo.get_nearest_parent(
     p_id uuid,
@@ -271,40 +100,6 @@ begin
 end;
 $$
 language plpgsql;
-
-delete from dbo.attribute_group;
-
-insert into
-    dbo.attribute_group (name)
-values
-    ('Performance'),
-    ('Dimensions'),
-    ('Weight'),
-    ('Fuel Efficiency'),
-    ('Electric Range'),
-    ('Charging'),
-    ('Materials'),
-    ('Pricing'),
-    ('Warranty'),
-    ('Certifications'),
-    ('Safety'),
-    ('Manufacturing Details');
-
-delete from dbo.feature_group;
-
-insert into
-    dbo.feature_group (name)
-values
-    ('Interior'),
-    ('Exterior'),
-    ('Technology'),
-    ('Colors'),
-    ('Safety'),
-    ('Comfort'),
-    ('Performance'),
-    ('Connectivity'),
-    ('Entertainment'),
-    ('Efficiency');
 
 create or replace function dbo.set_entity_attribute_value(
     p_entity_id uuid,
@@ -567,7 +362,6 @@ end;
 $$
 language plpgsql;
 
--- Function to get vehicle features, considering both vehicle-level and part-level features
 create or replace function dbo.get_vehicle_features(
     p_vehicle_id uuid
 )
@@ -586,7 +380,6 @@ returns table (
 ) as
 $$
 begin
-    -- Get features directly associated with the vehicle
     return query
     select vf.vehicle_id as entity_id,
            null::integer as entity_type_id,
@@ -605,7 +398,6 @@ begin
 
     union all
 
-    -- Get features inherited from vehicle parts
     select ef.entity_id,
            ef.entity_type_id,
            e.name as entity_name,
@@ -626,7 +418,6 @@ end;
 $$
 language plpgsql;
 
--- Similarly, update the function to get vehicle attributes
 create or replace function dbo.get_vehicle_attributes(
     p_vehicle_id uuid
 )
@@ -644,7 +435,6 @@ returns table (
 ) as
 $$
 begin
-    -- Get attributes directly associated with the vehicle
     return query
     select va.vehicle_id as entity_id,
            null::integer as entity_type_id,
@@ -662,7 +452,6 @@ begin
 
     union all
 
-    -- Get attributes inherited from vehicle parts
     select ea.entity_id,
            ea.entity_type_id,
            e.name as entity_name,
@@ -682,8 +471,6 @@ end;
 $$
 language plpgsql;
 
-
-
 create or replace function dbo.get_attribute_id(p_attribute_name text)
 returns integer as
 $$
@@ -698,7 +485,6 @@ begin
 end;
 $$
 language plpgsql;
-
 
 create or replace function dbo.get_feature_id(p_feature_name text)
 returns integer as

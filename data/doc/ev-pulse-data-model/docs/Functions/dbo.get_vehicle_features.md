@@ -2,7 +2,7 @@
 
 ### Overview
 
-The `dbo.get_vehicle_features` function retrieves a comprehensive list of features associated with a specific electric vehicle (EV). This includes features inherited from the vehicle's components, such as the variant, motor, and battery. The function returns a detailed table outlining each feature, its source, and whether it is inherited.
+The `dbo.get_vehicle_features` function retrieves a comprehensive list of features associated with a specific vehicle, including both vehicle-level features and those inherited from its parts. This function is essential for understanding the complete set of features that apply to a vehicle, considering the hierarchical structure of the database.
 
 ### Function Definition
 
@@ -11,9 +11,9 @@ create or replace function dbo.get_vehicle_features(
     p_vehicle_id uuid
 )
 returns table (
-    vehicle_part text,
     entity_id uuid,
     entity_type_id integer,
+    entity_name text,
     feature_id integer,
     is_optional boolean,
     is_active boolean,
@@ -24,25 +24,42 @@ returns table (
     source_entity_type_id integer
 ) as
 $$
-declare
-    v_variant_id uuid;
-    v_motor_id uuid;
-    v_battery_id uuid;
 begin
-    select variant_id, motor_id, battery_id
-    into v_variant_id, v_motor_id, v_battery_id
-    from dbo.vehicle
-    where vehicle_id = p_vehicle_id;
-
+    -- Get features directly associated with the vehicle
     return query
-    select 'Variant' as vehicle_part, ef.*
-    from dbo.get_entity_features(v_variant_id, dbo.get_entity_type_id('Variant')) ef
+    select vf.vehicle_id as entity_id,
+           null::integer as entity_type_id,
+           v.name as entity_name,
+           vf.feature_id,
+           vf.is_optional,
+           vf.is_active,
+           vf.price,
+           vf.currency,
+           false as is_inherited,
+           vf.vehicle_id as source_entity_id,
+           null::integer as source_entity_type_id
+    from dbo.vehicle_feature vf
+    join dbo.vehicle v on vf.vehicle_id = v.vehicle_id
+    where vf.vehicle_id = p_vehicle_id
+
     union all
-    select 'Motor' as vehicle_part, ef.*
-    from dbo.get_entity_features(v_motor_id, dbo.get_entity_type_id('Motor')) ef
-    union all
-    select 'Battery' as vehicle_part, ef.*
-    from dbo.get_entity_features(v_battery_id, dbo.get_entity_type_id('Battery')) ef
+
+    -- Get features inherited from vehicle parts
+    select ef.entity_id,
+           ef.entity_type_id,
+           e.name as entity_name,
+           ef.feature_id,
+           ef.is_optional,
+           ef.is_active,
+           ef.price,
+           ef.currency,
+           ef.entity_id != ef.source_entity_id as is_inherited,
+           ef.source_entity_id,
+           ef.source_entity_type_id
+    from dbo.vehicle_part vp
+    join dbo.entity e on vp.entity_id = e.id and vp.entity_type_id = e.entity_type_id
+    join dbo.get_entity_features(vp.entity_id, vp.entity_type_id) ef on true
+    where vp.vehicle_id = p_vehicle_id
     order by vehicle_part, is_inherited, entity_id;
 end;
 $$
@@ -51,33 +68,35 @@ language plpgsql;
 
 ### Parameters
 
-- **p_vehicle_id**: A UUID that uniquely identifies the vehicle for which features are to be retrieved.
+- **p_vehicle_id**: The UUID of the vehicle for which to retrieve features.
 
 ### Returns
 
-The function returns a table with the following columns:
-
-- **vehicle_part**: The part of the vehicle the feature is associated with (e.g., Variant, Motor, Battery).
-- **entity_id**: The unique identifier of the entity associated with the feature.
-- **entity_type_id**: The type of the entity (e.g., Variant, Motor, Battery).
-- **feature_id**: The unique identifier of the feature.
-- **is_optional**: A boolean indicating whether the feature is optional.
-- **is_active**: A boolean indicating whether the feature is active.
-- **price**: The price of the feature.
-- **currency**: The currency in which the price is specified.
-- **is_inherited**: A boolean indicating whether the feature is inherited from a parent entity.
-- **source_entity_id**: The unique identifier of the source entity from which the feature is inherited.
-- **source_entity_type_id**: The type of the source entity.
+- A table containing the following columns:
+  - **entity_id**: The UUID of the entity (vehicle or part).
+  - **entity_type_id**: The type ID of the entity (null for vehicle-level features).
+  - **entity_name**: The name of the entity.
+  - **feature_id**: The ID of the feature.
+  - **is_optional**: A boolean indicating whether the feature is optional.
+  - **is_active**: A boolean indicating whether the feature is active.
+  - **price**: The price of the feature.
+  - **currency**: The currency of the feature price.
+  - **is_inherited**: A boolean indicating whether the feature is inherited from a part.
+  - **source_entity_id**: The UUID of the source entity from which the feature is inherited.
+  - **source_entity_type_id**: The type ID of the source entity.
 
 ### Functional Usage
 
-- **Feature Retrieval**: This function is used to retrieve all features associated with a vehicle, including those inherited from its components.
-- **Inheritance Handling**: The function handles the inheritance of features, indicating whether a feature is directly associated with the vehicle or inherited from a parent entity.
+- **Feature Retrieval**: This function is used to retrieve all features associated with a vehicle, including those inherited from its parts.
+- **Hierarchical Traversal**: The function uses a union to combine vehicle-level features with those inherited from parts, providing a comprehensive view of all applicable features.
 
 ### Related Objects
 
-- **dbo.vehicle**: The table storing vehicle information, including references to the variant, motor, and battery.
-- **dbo.get_entity_features**: A function that retrieves features for a specific entity, used within this function to gather features for the vehicle's components.
+- **dbo.vehicle**: The table defining vehicles.
+- **dbo.vehicle_feature**: The table storing features associated with vehicles.
+- **dbo.vehicle_part**: The table defining the parts of a vehicle.
+- **dbo.entity**: The table defining entities and their hierarchical relationships.
+- **dbo.get_entity_features**: The function used to retrieve features for an entity.
 
 ### Sample Usage
 
@@ -89,7 +108,7 @@ select * from dbo.get_vehicle_features('vehicle-uuid');
 
 ### Technical Details
 
-- **Recursive Query**: The function uses a recursive query to traverse the hierarchy of entities and gather inherited features.
-- **Union All**: The results from different vehicle parts (Variant, Motor, Battery) are combined using `UNION ALL` to provide a comprehensive list of features.
+- **Union Operation**: The function uses a union to combine features directly associated with the vehicle and those inherited from its parts.
+- **Inheritance Logic**: The function considers the hierarchical structure of the vehicle and its parts to determine inherited features.
 
-This function is essential for understanding the complete set of features associated with an electric vehicle, including those inherited from its components.
+This function is crucial for understanding the complete set of features that apply to a vehicle, considering both direct associations and inheritance from parts.

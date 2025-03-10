@@ -2,7 +2,7 @@
 
 ### Overview
 
-The `dbo.get_vehicle_attributes` function retrieves a comprehensive list of attributes associated with a specific vehicle, including those inherited from its components (variant, motor, and battery). This function is essential for understanding the complete attribute profile of an electric vehicle.
+The `dbo.get_vehicle_attributes` function retrieves a comprehensive list of attributes associated with a specific vehicle, including both direct attributes and those inherited from its parts. This function is essential for understanding the complete set of attributes that apply to a vehicle, considering the hierarchical structure of the database.
 
 ### Function Definition
 
@@ -11,9 +11,9 @@ create or replace function dbo.get_vehicle_attributes(
     p_vehicle_id uuid
 )
 returns table (
-    vehicle_part text,
     entity_id uuid,
     entity_type_id integer,
+    entity_name text,
     attribute_id integer,
     is_active boolean,
     value text,
@@ -23,25 +23,40 @@ returns table (
     source_entity_type_id integer
 ) as
 $$
-declare
-    v_variant_id uuid;
-    v_motor_id uuid;
-    v_battery_id uuid;
 begin
-    select variant_id, motor_id, battery_id
-    into v_variant_id, v_motor_id, v_battery_id
-    from dbo.vehicle
-    where vehicle_id = p_vehicle_id;
-
+    -- Get attributes directly associated with the vehicle
     return query
-    select 'Variant' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(v_variant_id, dbo.get_entity_type_id('Variant')) ea
+    select va.vehicle_id as entity_id,
+           null::integer as entity_type_id,
+           v.name as entity_name,
+           va.attribute_id,
+           va.is_active,
+           va.value,
+           va.unit,
+           false as is_inherited,
+           va.vehicle_id as source_entity_id,
+           null::integer as source_entity_type_id
+    from dbo.vehicle_attribute va
+    join dbo.vehicle v on va.vehicle_id = v.vehicle_id
+    where va.vehicle_id = p_vehicle_id
+
     union all
-    select 'Motor' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(v_motor_id, dbo.get_entity_type_id('Motor')) ea
-    union all
-    select 'Battery' as vehicle_part, ea.*
-    from dbo.get_entity_attributes(v_battery_id, dbo.get_entity_type_id('Battery')) ea
+
+    -- Get attributes inherited from vehicle parts
+    select ea.entity_id,
+           ea.entity_type_id,
+           e.name as entity_name,
+           ea.attribute_id,
+           ea.is_active,
+           ea.value,
+           ea.unit,
+           ea.entity_id != ea.source_entity_id as is_inherited,
+           ea.source_entity_id,
+           ea.source_entity_type_id
+    from dbo.vehicle_part vp
+    join dbo.entity e on vp.entity_id = e.id and vp.entity_type_id = e.entity_type_id
+    join dbo.get_entity_attributes(vp.entity_id, vp.entity_type_id) ea on true
+    where vp.vehicle_id = p_vehicle_id
     order by vehicle_part, is_inherited, entity_id;
 end;
 $$
@@ -50,36 +65,38 @@ language plpgsql;
 
 ### Parameters
 
-- **p_vehicle_id**: A UUID that specifies the vehicle for which to retrieve attributes.
+- **p_vehicle_id**: The UUID of the vehicle for which to retrieve attributes.
 
 ### Returns
 
 - A table containing the following columns:
-  - **vehicle_part**: The part of the vehicle (Variant, Motor, Battery) to which the attribute belongs.
-  - **entity_id**: The UUID of the entity associated with the attribute.
-  - **entity_type_id**: The type of the entity (e.g., Variant, Motor, Battery).
+  - **entity_id**: The UUID of the entity (vehicle or part).
+  - **entity_type_id**: The type ID of the entity (null for direct vehicle attributes).
+  - **entity_name**: The name of the entity.
   - **attribute_id**: The ID of the attribute.
   - **is_active**: A boolean indicating whether the attribute is active.
   - **value**: The value of the attribute.
-  - **unit**: The unit of measurement for the attribute value.
-  - **is_inherited**: A boolean indicating whether the attribute is inherited from a parent entity.
+  - **unit**: The unit of the attribute value.
+  - **is_inherited**: A boolean indicating whether the attribute is inherited from a part.
   - **source_entity_id**: The UUID of the source entity from which the attribute is inherited.
-  - **source_entity_type_id**: The type of the source entity.
+  - **source_entity_type_id**: The type ID of the source entity.
 
 ### Functional Usage
 
-- **Attribute Aggregation**: This function aggregates attributes from the variant, motor, and battery components of a vehicle, providing a unified view of the vehicle's attributes.
-- **Inheritance Handling**: The function handles attribute inheritance, indicating whether an attribute is directly associated with the vehicle part or inherited from a parent entity.
+- **Attribute Retrieval**: This function is used to retrieve all attributes associated with a vehicle, including those inherited from its parts.
+- **Hierarchical Traversal**: The function uses a union to combine direct vehicle attributes with those inherited from parts, providing a comprehensive view of the vehicle's attributes.
 
 ### Related Objects
 
-- **dbo.vehicle**: The table storing vehicle configurations, referenced to retrieve component IDs.
-- **dbo.get_entity_attributes**: A function called to retrieve attributes for each vehicle component.
-- **dbo.get_entity_type_id**: A function used to retrieve the entity type ID based on the entity type name.
+- **dbo.vehicle**: The table defining vehicles.
+- **dbo.vehicle_attribute**: The table storing attributes directly associated with vehicles.
+- **dbo.vehicle_part**: The table defining the parts of a vehicle.
+- **dbo.entity**: The table defining entities and their hierarchical relationships.
+- **dbo.get_entity_attributes**: The function used to retrieve attributes for entities.
 
 ### Sample Usage
 
-To retrieve attributes for a specific vehicle:
+To retrieve the attributes for a specific vehicle:
 
 ```sql
 select * from dbo.get_vehicle_attributes('vehicle-uuid');
@@ -87,7 +104,7 @@ select * from dbo.get_vehicle_attributes('vehicle-uuid');
 
 ### Technical Details
 
-- **Union All**: The function uses `UNION ALL` to combine attributes from the variant, motor, and battery, ensuring that all relevant attributes are included in the result set.
-- **Ordering**: The results are ordered by vehicle part and inheritance status, making it easier to understand the origin of each attribute.
+- **Union Operation**: The function uses a union to combine direct vehicle attributes with those inherited from parts, ensuring a comprehensive list of attributes.
+- **Inheritance Logic**: The function considers the hierarchical structure of the vehicle and its parts to determine inherited attributes.
 
-This function is crucial for obtaining a comprehensive overview of a vehicle's attributes, considering the inheritance and composition of its parts.
+This function is crucial for understanding the complete set of attributes that apply to a vehicle, considering both direct and inherited attributes from its parts.

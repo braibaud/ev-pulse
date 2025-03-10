@@ -1,7 +1,7 @@
 You'll find below a database schema; the purpose of this database is to handle electric car (EV) related information:
 
-- An EV is represented as an entry in the `dbo.vehicule` table.
-- An EV is made of a variant, a motor and a battery.
+- An car/EV/vehicle is represented as an entry in the `dbo.vehicule` table.
+- An EV is made of multiple entities, referenced in the `dbo.vehicle_part` table.
 - Each of these parts is defined in the `dbo.entity` table which allows defining various types of entities defined in the `dbo.entity_type` table.
 - An entity can inherit attributes and features from a parent entity (that is the purpose of `foreign key (parent_id, parent_entity_type_name) references dbo.entity(id, entity_type_name)`). Everything that is not overriden is inherited; it includes attributes and features.
 
@@ -17,7 +17,7 @@ Your goal is to create a documentation markdown page for each object in the data
   - List out any technical details worth mentioning.
 - Your response should only contain the content of the markdown file for the object, nothing else.
 
-If you're clear with these instructions, please confirm by replying with "I understand the instructions."
+If you're clear with these instructions, please confirm by replying with "I understand the instructions".
 
 --- START OF DATABASE SCHEMA ---
 

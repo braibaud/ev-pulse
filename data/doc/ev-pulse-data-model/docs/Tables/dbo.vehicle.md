@@ -2,65 +2,49 @@
 
 ### Overview
 
-The `dbo.vehicle` table represents electric vehicles (EVs) within the database. Each vehicle is defined by its unique ID and is composed of a variant, motor, and battery, each of which is an entity in the `dbo.entity` table. This table ensures that each vehicle configuration is unique and allows for the management of vehicle-specific attributes and features.
+The `dbo.vehicle` table represents the core entity for storing information about electric vehicles (EVs) in the database. Each entry in this table corresponds to a unique vehicle, identified by a UUID. This table is central to managing vehicle-specific data and linking to other related entities such as vehicle parts, attributes, and features.
 
 ### Table Definition
 
 ```sql
 create table if not exists dbo.vehicle (
     vehicle_id uuid default gen_random_uuid(),
-    variant_id uuid not null,
-    variant_type_id integer not null,
-    motor_id uuid not null,
-    motor_type_id integer not null,
-    battery_id uuid not null,
-    battery_type_id integer not null,
+    name text not null,
     is_active boolean not null default true,
-    primary key (vehicle_id),
-    unique (variant_id, motor_id, battery_id),
-    foreign key (variant_id, variant_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (motor_id, motor_type_id) references dbo.entity(id, entity_type_id),
-    foreign key (battery_id, battery_type_id) references dbo.entity(id, entity_type_id)
+    primary key (vehicle_id)
 );
 ```
 
 ### Columns
 
-- **vehicle_id**: A unique identifier for the vehicle, generated using `gen_random_uuid()`.
-- **variant_id**: A UUID that references the variant entity associated with the vehicle.
-- **variant_type_id**: An integer that specifies the type of the variant entity.
-- **motor_id**: A UUID that references the motor entity associated with the vehicle.
-- **motor_type_id**: An integer that specifies the type of the motor entity.
-- **battery_id**: A UUID that references the battery entity associated with the vehicle.
-- **battery_type_id**: An integer that specifies the type of the battery entity.
-- **is_active**: A boolean flag indicating whether the vehicle is active.
+- **vehicle_id**: A UUID that uniquely identifies each vehicle. It is generated automatically using the `gen_random_uuid()` function from the `pgcrypto` extension.
+- **name**: The name of the vehicle. This field is mandatory and should contain a descriptive name for the vehicle.
+- **is_active**: A boolean flag indicating whether the vehicle is active. This can be used to soft-delete vehicles without removing them from the database.
 
 ### Functional Usage
 
-- **Vehicle Configuration**: The `dbo.vehicle` table allows for the configuration of electric vehicles by associating them with specific variants, motors, and batteries.
-- **Uniqueness**: The combination of `variant_id`, `motor_id`, and `battery_id` must be unique, ensuring that each vehicle configuration is distinct.
-- **Activation Status**: The `is_active` column allows for the activation or deactivation of vehicles without deleting them from the database.
+- **Vehicle Management**: This table is used to manage the list of vehicles in the system. Each vehicle can have multiple parts, attributes, and features associated with it.
+- **Unique Identification**: The `vehicle_id` serves as a unique identifier for each vehicle, ensuring that each vehicle can be distinctly referenced in related tables.
 
 ### Related Objects
 
-- **dbo.entity**: References entities for variants, motors, and batteries.
-- **dbo.vehicle_feature**: Stores features associated with vehicles.
-- **dbo.vehicle_attribute**: Stores attributes associated with vehicles.
-- **dbo.check_vehicle_type_ids**: A trigger function that ensures the correct entity types are used for variants, motors, and batteries.
+- **dbo.vehicle_part**: This table links vehicles to their constituent parts, which are defined as entities in the `dbo.entity` table.
+- **dbo.vehicle_attribute**: This table stores attributes specific to a vehicle, such as performance metrics or dimensions.
+- **dbo.vehicle_feature**: This table stores features specific to a vehicle, such as optional extras or technology packages.
+- **dbo.check_vehicle_has_parts**: A trigger function that ensures each vehicle has at least one part associated with it.
 
 ### Sample Usage
 
-To insert a new vehicle configuration, you can use the following SQL statement:
+To insert a new vehicle into the table:
 
 ```sql
-insert into dbo.vehicle (variant_id, variant_type_id, motor_id, motor_type_id, battery_id, battery_type_id, is_active)
-values ('variant-uuid', 2, 'motor-uuid', 4, 'battery-uuid', 3, true);
+insert into dbo.vehicle (name, is_active)
+values ('EcoCar Model X', true);
 ```
 
 ### Technical Details
 
-- **UUID Generation**: The `vehicle_id` column is automatically populated with a unique UUID using `gen_random_uuid()`.
-- **Constraint Management**: The `vehicle_id` column serves as the primary key, ensuring that each vehicle has a unique identifier. The combination of `variant_id`, `motor_id`, and `battery_id` is also unique.
-- **Foreign Keys**: The table includes foreign key constraints that reference the `dbo.entity` table for variants, motors, and batteries, ensuring referential integrity.
+- **UUID Generation**: The `vehicle_id` is automatically generated using the `gen_random_uuid()` function, ensuring a globally unique identifier for each vehicle.
+- **Soft Delete**: The `is_active` flag allows for soft deletion of vehicles, enabling them to be marked as inactive without removing their data from the database.
 
-This table is crucial for managing electric vehicle configurations and ensuring that each vehicle is associated with the correct components.
+This table is fundamental for managing vehicle data and serves as a central point for linking to other related entities in the database.
