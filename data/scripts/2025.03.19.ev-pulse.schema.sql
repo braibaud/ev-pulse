@@ -75,6 +75,50 @@ $$;
 ALTER FUNCTION dbo.check_vehicle_has_parts() OWNER TO braibau;
 
 --
+-- Name: create_attribute(text, text, text, boolean, boolean, boolean); Type: FUNCTION; Schema: dbo; Owner: braibau
+--
+
+CREATE FUNCTION dbo.create_attribute(p_name text, p_attribute_group_name text, p_default_unit text, p_is_active boolean DEFAULT true, p_is_inheritable boolean DEFAULT true, p_is_overridable boolean DEFAULT true) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_attribute_id integer;
+    v_attribute_group_id integer;
+BEGIN
+    -- Check if the attribute group exists, if not create it
+    SELECT id INTO v_attribute_group_id
+    FROM dbo.attribute_group
+    WHERE lower(name) = lower(p_attribute_group_name);
+
+    IF NOT FOUND THEN
+        INSERT INTO dbo.attribute_group (name)
+        VALUES (initcap(p_attribute_group_name))
+        RETURNING id INTO v_attribute_group_id;
+    END IF;
+
+    -- Check for duplicate attribute name (case-insensitive)
+    IF EXISTS (
+        SELECT 1
+        FROM dbo.attribute
+        WHERE lower(name) = lower(p_name)
+    ) THEN
+        RAISE EXCEPTION 'Attribute name already exists: %', p_name;
+    END IF;
+
+    -- Insert new attribute
+    INSERT INTO dbo.attribute (attribute_group_id, is_active, name, default_unit, is_inheritable, is_overridable)
+    VALUES (v_attribute_group_id, p_is_active, initcap(p_name), p_default_unit, p_is_inheritable, p_is_overridable)
+    RETURNING id INTO v_attribute_id;
+
+    -- Return the created attribute id
+    RETURN v_attribute_id;
+END;
+$$;
+
+
+ALTER FUNCTION dbo.create_attribute(p_name text, p_attribute_group_name text, p_default_unit text, p_is_active boolean, p_is_inheritable boolean, p_is_overridable boolean) OWNER TO braibau;
+
+--
 -- Name: create_entity(text, text, dbo.entity_key, boolean, boolean); Type: FUNCTION; Schema: dbo; Owner: braibau
 --
 
@@ -130,6 +174,50 @@ $$;
 
 
 ALTER FUNCTION dbo.create_entity(p_name text, p_entity_type_name text, p_parent_key dbo.entity_key, p_is_virtual boolean, p_is_active boolean) OWNER TO braibau;
+
+--
+-- Name: create_feature(text, text, text, boolean, boolean, boolean); Type: FUNCTION; Schema: dbo; Owner: braibau
+--
+
+CREATE FUNCTION dbo.create_feature(p_name text, p_feature_group_name text, p_default_currency text, p_is_active boolean DEFAULT true, p_is_inheritable boolean DEFAULT true, p_is_overridable boolean DEFAULT true) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    v_feature_id integer;
+    v_feature_group_id integer;
+BEGIN
+    -- Check if the feature group exists, if not create it
+    SELECT id INTO v_feature_group_id
+    FROM dbo.feature_group
+    WHERE lower(name) = lower(p_feature_group_name);
+
+    IF NOT FOUND THEN
+        INSERT INTO dbo.feature_group (name)
+        VALUES (initcap(p_feature_group_name))
+        RETURNING id INTO v_feature_group_id;
+    END IF;
+
+    -- Check for duplicate feature name (case-insensitive)
+    IF EXISTS (
+        SELECT 1
+        FROM dbo.feature
+        WHERE lower(name) = lower(p_name)
+    ) THEN
+        RAISE EXCEPTION 'Feature name already exists: %', p_name;
+    END IF;
+
+    -- Insert new feature
+    INSERT INTO dbo.feature (feature_group_id, is_active, name, default_currency, is_inheritable, is_overridable)
+    VALUES (v_feature_group_id, p_is_active, initcap(p_name), p_default_currency, p_is_inheritable, p_is_overridable)
+    RETURNING id INTO v_feature_id;
+
+    -- Return the created feature id
+    RETURN v_feature_id;
+END;
+$$;
+
+
+ALTER FUNCTION dbo.create_feature(p_name text, p_feature_group_name text, p_default_currency text, p_is_active boolean, p_is_inheritable boolean, p_is_overridable boolean) OWNER TO braibau;
 
 --
 -- Name: create_vehicule(text, dbo.entity_key[], boolean); Type: FUNCTION; Schema: dbo; Owner: braibau
