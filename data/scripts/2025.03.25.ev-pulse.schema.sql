@@ -754,7 +754,7 @@ CREATE TABLE dbo.entity (
     is_virtual boolean DEFAULT true NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     description text,
-    CONSTRAINT chk_entity_key_entity_type_id_not_null CHECK (((key).entity_type_id IS NOT NULL))
+    CONSTRAINT ck_entity_key_entity_type_id_not_null CHECK (((key).entity_type_id IS NOT NULL))
 );
 
 
@@ -1161,14 +1161,14 @@ ALTER SEQUENCE dbo.feature_id_seq OWNED BY dbo.feature.id;
 -- Name: group; Type: TABLE; Schema: dbo; Owner: braibau
 --
 
-CREATE TABLE dbo."group" (
+CREATE TABLE dbo.group (
     id integer NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     name text NOT NULL
 );
 
 
-ALTER TABLE dbo."group" OWNER TO braibau;
+ALTER TABLE dbo.group OWNER TO braibau;
 
 --
 -- Name: group_id_seq; Type: SEQUENCE; Schema: dbo; Owner: braibau
@@ -1188,7 +1188,7 @@ ALTER SEQUENCE dbo.group_id_seq OWNER TO braibau;
 -- Name: group_id_seq; Type: SEQUENCE OWNED BY; Schema: dbo; Owner: braibau
 --
 
-ALTER SEQUENCE dbo.group_id_seq OWNED BY dbo."group".id;
+ALTER SEQUENCE dbo.group_id_seq OWNED BY dbo.group.id;
 
 
 --
@@ -1279,366 +1279,373 @@ ALTER TABLE ONLY dbo.feature ALTER COLUMN id SET DEFAULT nextval('dbo.feature_id
 -- Name: group id; Type: DEFAULT; Schema: dbo; Owner: braibau
 --
 
-ALTER TABLE ONLY dbo."group" ALTER COLUMN id SET DEFAULT nextval('dbo.group_id_seq'::regclass);
+ALTER TABLE ONLY dbo.group ALTER COLUMN id SET DEFAULT nextval('dbo.group_id_seq'::regclass);
 
 
 --
--- Name: attribute attribute_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: attribute pk_attribute; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.attribute
-    ADD CONSTRAINT attribute_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT pk_attribute PRIMARY KEY (id);
 
 
 --
--- Name: entity_attribute entity_attribute_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_attribute
-    ADD CONSTRAINT entity_attribute_pkey PRIMARY KEY (entity_key, attribute_id);
-
-
---
--- Name: entity_feature entity_feature_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_feature
-    ADD CONSTRAINT entity_feature_pkey PRIMARY KEY (entity_key, feature_id);
-
-
---
--- Name: entity entity_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: entity pk_entity; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.entity
-    ADD CONSTRAINT entity_pkey PRIMARY KEY (key);
+    ADD CONSTRAINT pk_entity PRIMARY KEY (key);
 
 
 --
--- Name: entity_type entity_type_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: entity_attribute pk_entity_attribute; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_attribute
+    ADD CONSTRAINT pk_entity_attribute PRIMARY KEY (entity_key, attribute_id);
+
+
+--
+-- Name: entity_feature pk_entity_feature; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_feature
+    ADD CONSTRAINT pk_entity_feature PRIMARY KEY (entity_key, feature_id);
+
+
+--
+-- Name: entity_type pk_entity_type; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.entity_type
-    ADD CONSTRAINT entity_type_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT pk_entity_type PRIMARY KEY (id);
 
 
 --
--- Name: feature feature_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: feature pk_feature; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.feature
-    ADD CONSTRAINT feature_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT pk_feature PRIMARY KEY (id);
 
 
 --
--- Name: group group_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: group pk_group; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
-ALTER TABLE ONLY dbo."group"
-    ADD CONSTRAINT group_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY dbo.group
+    ADD CONSTRAINT pk_group PRIMARY KEY (id);
 
 
 --
--- Name: related_entities related_entities_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: related_entities pk_related_entities; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.related_entities
-    ADD CONSTRAINT related_entities_pkey PRIMARY KEY (entity1_key, entity2_key);
+    ADD CONSTRAINT pk_related_entities PRIMARY KEY (entity1_key, entity2_key);
 
 
 --
--- Name: attribute unique_attribute_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.attribute
-    ADD CONSTRAINT unique_attribute_name UNIQUE (name);
-
-
---
--- Name: entity_type unique_entity_type_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_type
-    ADD CONSTRAINT unique_entity_type_name UNIQUE (name);
-
-
---
--- Name: feature unique_feature_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.feature
-    ADD CONSTRAINT unique_feature_name UNIQUE (name);
-
-
---
--- Name: vehicle_attribute vehicle_attribute_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.vehicle_attribute
-    ADD CONSTRAINT vehicle_attribute_pkey PRIMARY KEY (vehicle_id, attribute_id);
-
-
---
--- Name: vehicle_feature vehicle_feature_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.vehicle_feature
-    ADD CONSTRAINT vehicle_feature_pkey PRIMARY KEY (vehicle_id, feature_id);
-
-
---
--- Name: vehicle_part vehicle_part_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.vehicle_part
-    ADD CONSTRAINT vehicle_part_pkey PRIMARY KEY (vehicle_id, entity_key);
-
-
---
--- Name: vehicle vehicle_pkey; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle pk_vehicle; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle
-    ADD CONSTRAINT vehicle_pkey PRIMARY KEY (vehicle_id);
+    ADD CONSTRAINT pk_vehicle PRIMARY KEY (vehicle_id);
 
 
 --
--- Name: idx_attribute_group_id; Type: INDEX; Schema: dbo; Owner: braibau
+-- Name: vehicle_attribute pk_vehicle_attribute; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
-CREATE INDEX idx_attribute_group_id ON dbo.attribute USING btree (group_id);
-
-
---
--- Name: idx_entity_attribute_attribute_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_entity_attribute_attribute_id ON dbo.entity_attribute USING btree (attribute_id);
+ALTER TABLE ONLY dbo.vehicle_attribute
+    ADD CONSTRAINT pk_vehicle_attribute PRIMARY KEY (vehicle_id, attribute_id);
 
 
 --
--- Name: idx_entity_attribute_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
+-- Name: vehicle_feature pk_vehicle_feature; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
-CREATE INDEX idx_entity_attribute_entity_key ON dbo.entity_attribute USING btree (entity_key);
-
-
---
--- Name: idx_entity_feature_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_entity_feature_entity_key ON dbo.entity_feature USING btree (entity_key);
+ALTER TABLE ONLY dbo.vehicle_feature
+    ADD CONSTRAINT pk_vehicle_feature PRIMARY KEY (vehicle_id, feature_id);
 
 
 --
--- Name: idx_entity_feature_feature_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_entity_feature_feature_id ON dbo.entity_feature USING btree (feature_id);
-
-
---
--- Name: idx_entity_parent_key; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_entity_parent_key ON dbo.entity USING btree (parent_key);
-
-
---
--- Name: idx_feature_group_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_feature_group_id ON dbo.feature USING btree (group_id);
-
-
---
--- Name: idx_related_entities_entity1_key; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_related_entities_entity1_key ON dbo.related_entities USING btree (entity1_key);
-
-
---
--- Name: idx_related_entities_entity2_key; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_related_entities_entity2_key ON dbo.related_entities USING btree (entity2_key);
-
-
---
--- Name: idx_vehicle_attribute_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_attribute_vehicle_id ON dbo.vehicle_attribute USING btree (vehicle_id);
-
-
---
--- Name: idx_vehicle_feature_feature_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_feature_feature_id ON dbo.vehicle_feature USING btree (feature_id);
-
-
---
--- Name: idx_vehicle_feature_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_feature_vehicle_id ON dbo.vehicle_feature USING btree (vehicle_id);
-
-
---
--- Name: idx_vehicle_name; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_name ON dbo.vehicle USING btree (name);
-
-
---
--- Name: idx_vehicle_part_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_part_entity_key ON dbo.vehicle_part USING btree (entity_key);
-
-
---
--- Name: idx_vehicle_part_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
---
-
-CREATE INDEX idx_vehicle_part_vehicle_id ON dbo.vehicle_part USING btree (vehicle_id);
-
-
---
--- Name: vehicle_part check_unique_parts; Type: TRIGGER; Schema: dbo; Owner: braibau
---
-
-CREATE TRIGGER check_unique_parts BEFORE INSERT ON dbo.vehicle_part FOR EACH ROW EXECUTE FUNCTION dbo.check_unique_vehicle_parts();
-
-
---
--- Name: entity unique_name_entity_type_trigger; Type: TRIGGER; Schema: dbo; Owner: braibau
---
-
-CREATE TRIGGER unique_name_entity_type_trigger BEFORE INSERT OR UPDATE ON dbo.entity FOR EACH ROW EXECUTE FUNCTION dbo.check_unique_name_entity_type();
-
-
---
--- Name: entity_attribute attribute_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_attribute
-    ADD CONSTRAINT attribute_fkey FOREIGN KEY (attribute_id) REFERENCES dbo.attribute(id);
-
-
---
--- Name: entity_feature entity_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_feature
-    ADD CONSTRAINT entity_fkey FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
-
-
---
--- Name: entity_attribute entity_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_attribute
-    ADD CONSTRAINT entity_fkey FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
-
-
---
--- Name: vehicle_part entity_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle_part pk_vehicle_part; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle_part
-    ADD CONSTRAINT entity_fkey FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
+    ADD CONSTRAINT pk_vehicle_part PRIMARY KEY (vehicle_id, entity_key);
 
 
 --
--- Name: entity_feature feature_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.entity_feature
-    ADD CONSTRAINT feature_fkey FOREIGN KEY (feature_id) REFERENCES dbo.feature(id);
-
-
---
--- Name: attribute fk_group; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: attribute uk_attribute_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.attribute
-    ADD CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES dbo."group"(id);
+    ADD CONSTRAINT uk_attribute_name UNIQUE (name);
 
 
 --
--- Name: feature fk_group; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: entity_type uk_entity_type_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_type
+    ADD CONSTRAINT uk_entity_type_name UNIQUE (name);
+
+
+--
+-- Name: feature uk_feature_name; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.feature
-    ADD CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES dbo."group"(id);
+    ADD CONSTRAINT uk_feature_name UNIQUE (name);
 
 
 --
--- Name: entity parent_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: ix_attribute_group_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_attribute_group_id ON dbo.attribute USING btree (group_id);
+
+
+--
+-- Name: ix_entity_attribute_attribute_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_entity_attribute_attribute_id ON dbo.entity_attribute USING btree (attribute_id);
+
+
+--
+-- Name: ix_entity_attribute_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_entity_attribute_entity_key ON dbo.entity_attribute USING btree (entity_key);
+
+
+--
+-- Name: ix_entity_feature_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_entity_feature_entity_key ON dbo.entity_feature USING btree (entity_key);
+
+
+--
+-- Name: ix_entity_feature_feature_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_entity_feature_feature_id ON dbo.entity_feature USING btree (feature_id);
+
+
+--
+-- Name: ix_entity_parent_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_entity_parent_key ON dbo.entity USING btree (parent_key);
+
+
+--
+-- Name: ix_feature_group_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_feature_group_id ON dbo.feature USING btree (group_id);
+
+
+--
+-- Name: ix_related_entities_entity1_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_related_entities_entity1_key ON dbo.related_entities USING btree (entity1_key);
+
+
+--
+-- Name: ix_related_entities_entity2_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_related_entities_entity2_key ON dbo.related_entities USING btree (entity2_key);
+
+
+--
+-- Name: ix_vehicle_attribute_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_attribute_vehicle_id ON dbo.vehicle_attribute USING btree (vehicle_id);
+
+
+--
+-- Name: ix_vehicle_feature_feature_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_feature_feature_id ON dbo.vehicle_feature USING btree (feature_id);
+
+
+--
+-- Name: ix_vehicle_feature_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_feature_vehicle_id ON dbo.vehicle_feature USING btree (vehicle_id);
+
+
+--
+-- Name: ix_vehicle_name; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_name ON dbo.vehicle USING btree (name);
+
+
+--
+-- Name: ix_vehicle_part_entity_key; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_part_entity_key ON dbo.vehicle_part USING btree (entity_key);
+
+
+--
+-- Name: ix_vehicle_part_vehicle_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE INDEX ix_vehicle_part_vehicle_id ON dbo.vehicle_part USING btree (vehicle_id);
+
+
+--
+-- Name: ux_entity_name_entity_type_id; Type: INDEX; Schema: dbo; Owner: braibau
+--
+
+CREATE UNIQUE INDEX ux_entity_name_entity_type_id ON dbo.entity USING btree (name, ((key).entity_type_id));
+
+
+--
+-- Name: vehicle_part tg_check_unique_parts; Type: TRIGGER; Schema: dbo; Owner: braibau
+--
+
+CREATE TRIGGER tg_check_unique_parts BEFORE INSERT ON dbo.vehicle_part FOR EACH ROW EXECUTE FUNCTION dbo.check_unique_vehicle_parts();
+
+
+--
+-- Name: entity tg_unique_name_entity_type; Type: TRIGGER; Schema: dbo; Owner: braibau
+--
+
+CREATE TRIGGER tg_unique_name_entity_type BEFORE INSERT OR UPDATE ON dbo.entity FOR EACH ROW EXECUTE FUNCTION dbo.check_unique_name_entity_type();
+
+
+--
+-- Name: attribute fk_attribute_group_group; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.attribute
+    ADD CONSTRAINT fk_attribute_group_group FOREIGN KEY (group_id) REFERENCES dbo.group(id);
+
+
+--
+-- Name: entity_attribute fk_entity_attribute_attribute_attribute; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_attribute
+    ADD CONSTRAINT fk_entity_attribute_attribute_attribute FOREIGN KEY (attribute_id) REFERENCES dbo.attribute(id);
+
+
+--
+-- Name: entity_attribute fk_entity_attribute_entity_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_attribute
+    ADD CONSTRAINT fk_entity_attribute_entity_entity FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
+
+
+--
+-- Name: entity_feature fk_entity_feature_entity_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_feature
+    ADD CONSTRAINT fk_entity_feature_entity_entity FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
+
+
+--
+-- Name: entity_feature fk_entity_feature_feature_feature; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.entity_feature
+    ADD CONSTRAINT fk_entity_feature_feature_feature FOREIGN KEY (feature_id) REFERENCES dbo.feature(id);
+
+
+--
+-- Name: entity fk_entity_parent_key_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.entity
-    ADD CONSTRAINT parent_fkey FOREIGN KEY (parent_key) REFERENCES dbo.entity(key);
+    ADD CONSTRAINT fk_entity_parent_key_entity FOREIGN KEY (parent_key) REFERENCES dbo.entity(key);
 
 
 --
--- Name: related_entities related_entities_entity1_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: feature fk_feature_group_group; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.feature
+    ADD CONSTRAINT fk_feature_group_group FOREIGN KEY (group_id) REFERENCES dbo.group(id);
+
+
+--
+-- Name: related_entities fk_related_entities_entity1_key_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.related_entities
-    ADD CONSTRAINT related_entities_entity1_fkey FOREIGN KEY (entity1_key) REFERENCES dbo.entity(key);
+    ADD CONSTRAINT fk_related_entities_entity1_key_entity FOREIGN KEY (entity1_key) REFERENCES dbo.entity(key);
 
 
 --
--- Name: related_entities related_entities_entity2_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: related_entities fk_related_entities_entity2_key_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.related_entities
-    ADD CONSTRAINT related_entities_entity2_fkey FOREIGN KEY (entity2_key) REFERENCES dbo.entity(key);
+    ADD CONSTRAINT fk_related_entities_entity2_key_entity FOREIGN KEY (entity2_key) REFERENCES dbo.entity(key);
 
 
 --
--- Name: vehicle_attribute vehicle_attribute_attribute_id_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
---
-
-ALTER TABLE ONLY dbo.vehicle_attribute
-    ADD CONSTRAINT vehicle_attribute_attribute_id_fkey FOREIGN KEY (attribute_id) REFERENCES dbo.attribute(id);
-
-
---
--- Name: vehicle_attribute vehicle_attribute_vehicle_id_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle_attribute fk_vehicle_attribute_attribute_id_attribute; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle_attribute
-    ADD CONSTRAINT vehicle_attribute_vehicle_id_fkey FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
+    ADD CONSTRAINT fk_vehicle_attribute_attribute_id_attribute FOREIGN KEY (attribute_id) REFERENCES dbo.attribute(id);
 
 
 --
--- Name: vehicle_feature vehicle_feature_feature_id_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle_attribute fk_vehicle_attribute_vehicle_id_vehicle; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.vehicle_attribute
+    ADD CONSTRAINT fk_vehicle_attribute_vehicle_id_vehicle FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
+
+
+--
+-- Name: vehicle_feature fk_vehicle_feature_feature_id_feature; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle_feature
-    ADD CONSTRAINT vehicle_feature_feature_id_fkey FOREIGN KEY (feature_id) REFERENCES dbo.feature(id);
+    ADD CONSTRAINT fk_vehicle_feature_feature_id_feature FOREIGN KEY (feature_id) REFERENCES dbo.feature(id);
 
 
 --
--- Name: vehicle_feature vehicle_feature_vehicle_id_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle_feature fk_vehicle_feature_vehicle_id_vehicle; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle_feature
-    ADD CONSTRAINT vehicle_feature_vehicle_id_fkey FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
+    ADD CONSTRAINT fk_vehicle_feature_vehicle_id_vehicle FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
 
 
 --
--- Name: vehicle_part vehicle_fkey; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+-- Name: vehicle_part fk_vehicle_part_entity_entity; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
 ALTER TABLE ONLY dbo.vehicle_part
-    ADD CONSTRAINT vehicle_fkey FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
+    ADD CONSTRAINT fk_vehicle_part_entity_entity FOREIGN KEY (entity_key) REFERENCES dbo.entity(key);
+
+
+--
+-- Name: vehicle_part fk_vehicle_part_vehicle_id_vehicle; Type: FK CONSTRAINT; Schema: dbo; Owner: braibau
+--
+
+ALTER TABLE ONLY dbo.vehicle_part
+    ADD CONSTRAINT fk_vehicle_part_vehicle_id_vehicle FOREIGN KEY (vehicle_id) REFERENCES dbo.vehicle(vehicle_id);
 
 
 --

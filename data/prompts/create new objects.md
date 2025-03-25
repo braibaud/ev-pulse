@@ -2,5 +2,6 @@ You'll find below a database schema. For the time being, just memorize the schem
 
 --- START OF DATABASE SCHEMA ---
 
+
 --- END OF DATABASE SCHEMA ---
 
