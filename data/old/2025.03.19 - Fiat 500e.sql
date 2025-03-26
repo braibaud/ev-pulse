@@ -40,9 +40,22 @@ SELECT dbo.create_attribute('Turning Diameter', 'Dimensions', 'm', true, true, t
 -- WHEELS AND TIRES
 SELECT dbo.create_attribute('Tire Size', 'Wheels and Tires', '-', true, true, true);
 SELECT dbo.create_attribute('Wheel Size', 'Wheels and Tires', 'in', true, true, true);
+SELECT dbo.create_attribute('Wheel Type', 'Wheels and Tires', '-', true, true, true);
 
 -- WEIGHT
 SELECT dbo.create_attribute('Unladen Weight', 'Weight', 'kg', true, true, true);
+
+-- SAFETY
+SELECT dbo.create_attribute('Airbags', 'Safety', '-', true, true, true);
+
+SELECT dbo.create_attribute('Climate Control Zones', 'Interior', '-', true, true, true);
+SELECT dbo.create_attribute('Speakers', 'Connectivity', '-', true, true, true);
+SELECT dbo.create_attribute('Dashboard Instrumentation Screen Size', 'Connectivity', 'in', true, true, true);
+SELECT dbo.create_attribute('Infotainment System Screen Size', 'Connectivity', 'in', true, true, true);
+SELECT dbo.create_attribute('Dashboard Color', 'Interior', '-', true, true, true);
+SELECT dbo.create_attribute('', '', '-', true, true, true);
+SELECT dbo.create_attribute('', '', '-', true, true, true);
+SELECT dbo.create_attribute('', '', '-', true, true, true);
 
 -- Create Features
 
@@ -53,12 +66,10 @@ SELECT dbo.create_feature('Body-colored Mirror Caps', 'Exterior', null, true, tr
 SELECT dbo.create_feature('15" Steel Wheels', 'Exterior', null, true, true, true);
 SELECT dbo.create_feature('16" Icon Alloy Wheels', 'Exterior', null, true, true, true);
 SELECT dbo.create_feature('17" Bi-color Alloy Wheels', 'Exterior', null, true, true, true);
-SELECT dbo.create_feature('Steering Wheel with Controls', 'Interior', null, true, true, true);
-SELECT dbo.create_feature('Soft-touch Steering Wheel with Controls', 'Interior', null, true, true, true);
-SELECT dbo.create_feature('Bi-color Soft-touch Steering Wheel with Controls', 'Interior', null, true, true, true);
 SELECT dbo.create_feature('Chrome Side Strips', 'Exterior', null, true, true, true);
 SELECT dbo.create_feature('Chrome Window Trim', 'Exterior', null, true, true, true);
 SELECT dbo.create_feature('Door Sills', 'Exterior', null, true, true, true);
+SELECT dbo.create_feature('Chrome Door Sills', 'Exterior', null, true, true, true);
 
 -- SAFETY
 SELECT dbo.create_feature('ABS with EBD', 'Safety', null, true, true, true);
@@ -85,25 +96,30 @@ SELECT dbo.create_feature('Adaptive Cruise Control', 'Safety', null, true, true,
 SELECT dbo.create_feature('Blind Spot Detection', 'Safety', null, true, true, true);
 SELECT dbo.create_feature('360° Radars with Drone View', 'Safety', null, true, true, true);
 
+
 -- INTERIOR
-SELECT dbo.create_feature('Electrically Adjustable Exterior Mirrors', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Electric Front Windows', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Height-Adjustable Steering Wheel', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Depth-Adjustable Steering Wheel', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Driver Seat with 4-Way Adjustment', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Driver Seat with 6-Way Adjustment', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Wireless Phone Charger', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Heated Front Seats', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Heated Windshield', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Glove Box with UV-C Disinfecting Light', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Automatic Single-Zone Climate Control', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Automatic Dual-Zone Climate Control', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Center Armrest', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Closed Central Console', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('50/50 Split-Folding Rear Bench', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Panoramic Glass Roof', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Keyless Entry (Driver Side)', 'Comfort', null, true, true, true);
-SELECT dbo.create_feature('Floor Mats', 'Comfort', null, true, true, true);
+SELECT dbo.create_feature('Electric Front Windows', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Height-Adjustable Steering Wheel', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Depth-Adjustable Steering Wheel', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Driver Seat with 4-Way Adjustment', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Driver Seat with 6-Way Adjustment', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Wireless Phone Charger', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Heated Front Seats', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Glove Box with UV-C Disinfecting Light', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Automatic Single-Zone Climate Control', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Automatic Dual-Zone Climate Control', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Center Armrest', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Closed Central Console', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('50/50 Split-Folding Rear Bench', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Panoramic Glass Roof', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Floor Mats', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Steering Wheel with Controls', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Soft-touch Steering Wheel with Controls', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Bi-color Soft-touch Steering Wheel with Controls', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Electrically Adjustable Exterior Mirrors', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Heated Windshield', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Keyless Entry (Driver Side)', 'Interior', null, true, true, true);
+SELECT dbo.create_feature('Keyless Start', 'Interior', null, true, true, true);
 
 -- SOUND & CONNECTIVITY
 SELECT dbo.create_feature('Smartphone Holder', 'Connectivity', null, true, true, true);
@@ -120,3 +136,99 @@ SELECT dbo.create_feature('DC Fast Charging up to 85 kW', 'Charging', null, true
 SELECT dbo.create_feature('EV Drive Mode Selector', 'Charging', null, true, true, true);
 SELECT dbo.create_feature('Pedestrian Alert System', 'Charging', null, true, true, true);
 SELECT dbo.create_feature('Type 2 Mode 3 Charging Cable (Wallbox & Public Charging)', 'Charging', null, true, true, true);
+
+
+-- BASE HIERARCHY --
+DO 
+$$
+DECLARE
+    v_fiat dbo.entity_key;
+    v_500 dbo.entity_key;
+    v_500_red dbo.entity_key;
+    v_500_la_prima dbo.entity_key;
+    v_500_op_confort dbo.entity_key;
+    v_500_op_style dbo.entity_key;
+BEGIN
+    v_fiat := dbo.create_entity('Fiat', 'Brand', null::dbo.entity_key, false, true);
+    v_500 := dbo.create_entity('500e', 'Model', v_fiat, true, true);
+    v_500_red := dbo.create_entity('500e (RED)', 'Variant', v_500, false, true);
+    v_500_la_prima := dbo.create_entity('500e La Prima', 'Variant', v_500_red, false, true);
+
+    v_500_op_confort := dbo.create_option_pack(
+        v_500_red, 
+        'Pack Confort', 
+        ARRAY[
+            'Center Armrest',
+            '50/50 Split-Folding Rear Bench',
+            'Blind Spot Detection',
+            'Heated Windshield',
+            '360° Radars with Drone View',
+            'Electrically Adjustable Exterior Mirrors',
+            'Heated Front Seats'
+        ]);
+
+    v_500_op_style := dbo.create_option_pack(
+        v_500_red,
+        'Pack Style', 
+        ARRAY[
+            'Chrome Window Trim',
+            '16" Icon Alloy Wheels',
+            'Full LED Infinity Headlights',
+            'Chrome Door Sills'
+        ]);
+
+    /*
+    • 6 Airbags -> att
+    • 6 haut-parleurs -> att
+    • Alerte de franchissement de ligne
+    • Appel dʼurgence e-Call
+    • Apple CarPlay & Android Auto sans fil 
+    • Câble de recharge Mode 3 (recharge publique & wallbox)
+    • Caméra de recul
+    • Capteurs de pluie & luminosité 
+    • Chargeur embarqué 11 kW (AC)
+    • Climatisation automatique 
+    • Démarrage sans clé
+    • Détecteur de fatigue
+    • Écran TFT 7” couleur -> att
+    • Feux de jour à LED
+    • Frein à main électrique 
+    • Freinage autonome dʼurgence 
+    • Jantes acier 15” -> size et type en att
+    • Planche de bord rouge -> att
+    • Reconnaissance des panneaux
+    • Régulateur & limiteur de vitesse
+    • Système Uconnect TM 10,25” -> att
+    • Volant noir soft touch
+
+    battery specific:
+    • Recharge rapide 50 kW (DC) (petite batterie)
+    • Recharge rapide 85 kW (DC) (grosse batterie)
+
+    */
+    
+    PERFORM dbo.assign_entity_features(
+        v_500_red,
+        ARRAY[
+            ('Lane Keeping Assist', null)::dbo.pair_real,
+            ('Emergency Call e-Call', null)::dbo.pair_real,
+            ('Wireless Apple CarPlay / Android Auto', null)::dbo.pair_real,
+            ('Type 2 Mode 3 Charging Cable (Wallbox & Public Charging)', null)::dbo.pair_real,
+            ('Rearview Camera', null)::dbo.pair_real,
+            ('Light Sensors', null)::dbo.pair_real,
+            ('Rain Sensors', null)::dbo.pair_real,
+            ('Onboard AC Mono-Triphasé Charger up to 11 kW', null)::dbo.pair_real,
+            ('Automatic Climate Control', null)::dbo.pair_real,
+            ('Keyless Start', null)::dbo.pair_real,
+            ('Driver Fatigue Detection', null)::dbo.pair_real,
+            ('LED Daytime Running Lights', null)::dbo.pair_real,
+            ('Electric Parking Brake', null)::dbo.pair_real,
+            ('Autonomous Emergency Braking', null)::dbo.pair_real,
+            ('15" Steel Wheels', null)::dbo.pair_real,
+            ('Traffic Sign Recognition', null)::dbo.pair_real,
+            ('Cruise Control', null)::dbo.pair_real,
+            ('Speed Limiter', null)::dbo.pair_real,
+            ('Soft-touch Steering Wheel with Controls', null)::dbo.pair_real
+        ]);
+END;
+$$;

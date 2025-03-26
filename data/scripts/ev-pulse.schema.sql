@@ -1161,14 +1161,14 @@ ALTER SEQUENCE dbo.feature_id_seq OWNED BY dbo.feature.id;
 -- Name: group; Type: TABLE; Schema: dbo; Owner: braibau
 --
 
-CREATE TABLE dbo.group (
+CREATE TABLE dbo."group" (
     id integer NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     name text NOT NULL
 );
 
 
-ALTER TABLE dbo.group OWNER TO braibau;
+ALTER TABLE dbo."group" OWNER TO braibau;
 
 --
 -- Name: group_id_seq; Type: SEQUENCE; Schema: dbo; Owner: braibau
@@ -1188,7 +1188,7 @@ ALTER SEQUENCE dbo.group_id_seq OWNER TO braibau;
 -- Name: group_id_seq; Type: SEQUENCE OWNED BY; Schema: dbo; Owner: braibau
 --
 
-ALTER SEQUENCE dbo.group_id_seq OWNED BY dbo.group.id;
+ALTER SEQUENCE dbo.group_id_seq OWNED BY dbo."group".id;
 
 
 --
@@ -1279,7 +1279,7 @@ ALTER TABLE ONLY dbo.feature ALTER COLUMN id SET DEFAULT nextval('dbo.feature_id
 -- Name: group id; Type: DEFAULT; Schema: dbo; Owner: braibau
 --
 
-ALTER TABLE ONLY dbo.group ALTER COLUMN id SET DEFAULT nextval('dbo.group_id_seq'::regclass);
+ALTER TABLE ONLY dbo."group" ALTER COLUMN id SET DEFAULT nextval('dbo.group_id_seq'::regclass);
 
 
 --
@@ -1334,7 +1334,7 @@ ALTER TABLE ONLY dbo.feature
 -- Name: group pk_group; Type: CONSTRAINT; Schema: dbo; Owner: braibau
 --
 
-ALTER TABLE ONLY dbo.group
+ALTER TABLE ONLY dbo."group"
     ADD CONSTRAINT pk_group PRIMARY KEY (id);
 
 
@@ -1533,7 +1533,7 @@ CREATE TRIGGER tg_unique_name_entity_type BEFORE INSERT OR UPDATE ON dbo.entity 
 --
 
 ALTER TABLE ONLY dbo.attribute
-    ADD CONSTRAINT fk_attribute_group_group FOREIGN KEY (group_id) REFERENCES dbo.group(id);
+    ADD CONSTRAINT fk_attribute_group_group FOREIGN KEY (group_id) REFERENCES dbo."group"(id);
 
 
 --
@@ -1581,7 +1581,7 @@ ALTER TABLE ONLY dbo.entity
 --
 
 ALTER TABLE ONLY dbo.feature
-    ADD CONSTRAINT fk_feature_group_group FOREIGN KEY (group_id) REFERENCES dbo.group(id);
+    ADD CONSTRAINT fk_feature_group_group FOREIGN KEY (group_id) REFERENCES dbo."group"(id);
 
 
 --

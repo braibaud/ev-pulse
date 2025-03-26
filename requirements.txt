@@ -3,3 +3,8 @@ streamlit_authenticator
 pytest
 jsonschema
 pandas
+sqlalchemy
+psycopg2-binary
+numpy
+streamlit-aggrid
+sqlacodegen

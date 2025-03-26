@@ -1,1 +1,1 @@
-pg_dump -U braibau -h localhost -p 5432 -f 2025.03.19.ev-pulse.schema.sql ev-pulse
+pg_dump -s -U braibau -h localhost -p 5432 -f ev-pulse.schema.sql ev-pulse

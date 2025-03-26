@@ -12,5 +12,8 @@
             ]
         }
     },
-    "postCreateCommand": "./setup.sh"
+    "postCreateCommand": "./setup.sh",
+    "remoteEnv": {
+        "DATABASE_URL": "postgresql://braibau@host.docker.internal:5432/ev-pulse"
+    }
 }
